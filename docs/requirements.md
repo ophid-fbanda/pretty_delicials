@@ -18,6 +18,7 @@ Nothing below is a feature list. Features go here only after you state them.
 | First message | You would provide more resources after that. |
 | Follow-up | The attached lockup is the face of the app. |
 | Follow-up | Discuss requirements as they are documented — do not invent them. |
+| Follow-up | Discuss the best stack first; what is the best backend. |
 
 ## Observed from the lockup you sent
 
@@ -51,3 +52,4 @@ You state a requirement. It is written here, attributed to you. Recommendations 
 | Date | What |
 | --- | --- |
 | 2026-09-15 | Removed invented PRD. Kept only stated inputs and logo observations. |
+| 2026-09-15 | Stack discussion started: backend only. Recommendation lives in architecture.md. |
