@@ -20,6 +20,7 @@ Nothing below is a feature list. Features go here only after you state them.
 | Follow-up | Discuss requirements as they are documented — do not invent them. |
 | Follow-up | Discuss the best stack first; what is the best backend. |
 | Follow-up | Agreed the backend (Spring Boot + PostgreSQL). Next: web frontend. |
+| Follow-up | Why React, not Vue? |
 
 ## Observed from the lockup you sent
 
@@ -42,7 +43,7 @@ Until you say so, these are unknown:
 - Customer-facing vs staff-only
 - Country, currency, tax
 - What “bakery management” includes for *this* business
-- Web frontend (React was recommended; not agreed yet)
+- Web frontend (Vue vs React; not agreed)
 - Android / iPhone client stack
 
 ## How this file will grow
