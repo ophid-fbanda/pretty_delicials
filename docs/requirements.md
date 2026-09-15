@@ -19,6 +19,7 @@ Nothing below is a feature list. Features go here only after you state them.
 | Follow-up | The attached lockup is the face of the app. |
 | Follow-up | Discuss requirements as they are documented — do not invent them. |
 | Follow-up | Discuss the best stack first; what is the best backend. |
+| Follow-up | Agreed the backend (Spring Boot + PostgreSQL). Next: web frontend. |
 
 ## Observed from the lockup you sent
 
@@ -41,7 +42,8 @@ Until you say so, these are unknown:
 - Customer-facing vs staff-only
 - Country, currency, tax
 - What “bakery management” includes for *this* business
-- Client stack (Flutter was a recommendation, not your requirement)
+- Web frontend (React was recommended; not agreed yet)
+- Android / iPhone client stack
 
 ## How this file will grow
 
@@ -53,3 +55,4 @@ You state a requirement. It is written here, attributed to you. Recommendations 
 | --- | --- |
 | 2026-09-15 | Removed invented PRD. Kept only stated inputs and logo observations. |
 | 2026-09-15 | Stack discussion started: backend only. Recommendation lives in architecture.md. |
+| 2026-09-15 | Backend agreed: Spring Boot + PostgreSQL. Web frontend discussion started. |

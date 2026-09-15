@@ -1,40 +1,49 @@
 # Architecture
 
-Recommendations below are **mine**. They are not product requirements.
+Stack choices only. Not a product spec.
 
 ## What you have stated
 
 - Bakery management app
 - Android, iPhone, web
 - A proper backend
-- You prefer Spring Boot, and asked what I think is best
+- You prefer Spring Boot; you then agreed **Spring Boot + PostgreSQL**
+- Next: discuss the web frontend
 
-## Backend — what I would use
+## Backend — agreed
 
-**Spring Boot 4 on Java 21, with PostgreSQL.**
+**Spring Boot 4 on Java 21, PostgreSQL.**
 
-That is also my own pick, not only because you already lean that way.
+The API is the source of truth. Android, iPhone, and web all call it. Comparison of rejected backends stays in the change log below; we are not reopening that unless you want to.
 
-A bakery management backend is a business system: users, rules, money-shaped numbers, stock that must not go negative by accident, history you can trust. The job of the server is to be the source of truth for three clients, not a thin wrapper around a spreadsheet or a hosted BaaS.
+## Web frontend — recommendation (not yet agreed)
+
+**React + TypeScript, as a Vite SPA, talking to the Spring Boot API.**
+
+That is the best *web* frontend for a bakery management app: logged-in screens, tables, forms, filters. The browser loads the app and calls `/api`. Spring Boot stays the only server.
 
 | Option | Verdict | Why |
 | --- | --- | --- |
-| **Spring Boot** | **Use this** | Strong default for a multi-client business API: transactions, security, migrations, testing, long life. Independent of whether the UI is Flutter, React, or native. |
-| NestJS (Node / TypeScript) | Runner-up | Fine API framework. Worth it mainly if the *web* app is also TypeScript. Does not share a language with Flutter or with native iOS. Slightly less of a “proper backend” default than Spring for this kind of system. |
-| Django / Laravel | Not first | Excellent if the product were a web admin that *is* the app. You asked for Android and iPhone as well, so the real product is an API. Their admin UIs do not replace those clients. |
-| Go | Not first | Great for simple, fast APIs. You would hand-build more of the business layer that Spring already has. |
-| Firebase / Supabase | No | Fast to sketch. Not a proper backend for core business rules. You will fight it once invariants matter. |
+| **React + TypeScript (Vite SPA)** | **Use this for web** | Strongest fit for a management UI. Huge ecosystem for tables, forms, and data fetching. No second backend. |
+| Next.js | Not first | Adds a Node server in front of Spring. Useful for a public marketing site or SEO. Not needed for a signed-in management app. |
+| Angular | Runner-up | Common next to Spring. Heavier than this app needs. |
+| Vue | Fine, not first | Same idea as React, smaller ecosystem for this kind of UI. |
+| Flutter web | Only if one UI for all platforms | Good enough in a browser. Weaker than React for dense admin UI. The reason to pick it is sharing with Android/iPhone, not because it is the best web. |
+| Thymeleaf / server-rendered Spring | No | You still need an API for phones. Do not build the web UI twice (HTML on the server and JSON clients). |
 
-**Database:** PostgreSQL either way. I would not start on MySQL, MongoDB, or a spreadsheet.
+**TypeScript is part of the recommendation.** Plain JavaScript for a long-lived management app is a poor trade.
 
-**Not part of this choice:** screens, modules, or an API list. Those wait on real product requirements.
+UI kit (for example Tailwind + shadcn, or MUI) can wait until the web choice is locked. No screens or pages until you state product requirements.
 
-## Clients (not decided)
+### Effect on Android and iPhone
 
-You named three platforms. The backend above does not force a UI stack. We should pick clients next, after you accept or reject this backend.
+Choosing React for web means the phones will be a **separate** UI codebase (Flutter, React Native, or native). That is the cost of using the best web stack.
+
+If you would rather have **one** UI for web + Android + iPhone, say so before we lock React. In that case Flutter for all three is the honest alternative, and web would not be React.
 
 ## Change log
 
 | Date | What |
 | --- | --- |
-| 2026-09-15 | Backend recommendation: Spring Boot + PostgreSQL. Alternatives recorded as discussion, not as your spec. |
+| 2026-09-15 | Backend recommendation: Spring Boot + PostgreSQL. |
+| 2026-09-15 | You agreed the backend. Web recommendation: React + TypeScript (Vite SPA). |
