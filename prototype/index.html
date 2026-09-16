@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pretty's Delici-als</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600;700&family=Karla:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="phone" id="shell">
+      <div class="glow" aria-hidden="true"></div>
+
+      <section class="screen" id="auth-screen">
+        <header class="brand">
+          <div class="face-ring">
+            <img class="face" src="img/face.jpg" alt="Pretty's Delici-als" width="889" height="883" />
+          </div>
+          <p class="brand-name">Pretty's Delici-als</p>
+        </header>
+
+        <div class="mode" role="tablist" aria-label="Account">
+          <button type="button" class="mode-btn is-on" data-mode="login" role="tab" aria-selected="true">
+            Login
+          </button>
+          <button type="button" class="mode-btn" data-mode="create" role="tab" aria-selected="false">
+            Create account
+          </button>
+        </div>
+
+        <form id="auth-form" class="form" novalidate>
+          <p class="hint" id="form-hint">Phone number and your secret.</p>
+
+          <label class="field">
+            <span>Phone number</span>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="e.g. 077 000 0000" />
+          </label>
+
+          <label class="field extra" hidden>
+            <span>Preferred name</span>
+            <input id="name" name="preferredName" type="text" autocomplete="name" placeholder="What should we call you?" />
+          </label>
+
+          <label class="field extra" hidden>
+            <span>Email <em>(optional)</em></span>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="you@email.com" />
+          </label>
+
+          <label class="field">
+            <span>Secret</span>
+            <input id="secret" name="secret" type="password" autocomplete="current-password" required placeholder="Your secret" />
+          </label>
+
+          <p class="error" id="form-error" hidden></p>
+          <button class="submit" type="submit" id="submit-btn">Login</button>
+        </form>
+      </section>
+
+      <section class="app" id="app-screen" hidden>
+        <header class="titlebar">
+          <button type="button" class="icon-btn" id="burger-btn" aria-label="Open roles">
+            <span></span><span></span><span></span>
+          </button>
+          <h1 class="app-title">
+            <img class="bar-face" src="img/face.jpg" alt="" />
+            <span id="app-title-text">Pretty's</span>
+          </h1>
+          <button type="button" class="avatar" id="user-btn" aria-label="Account menu">
+            <span id="avatar-letter">P</span>
+          </button>
+        </header>
+
+        <div class="user-menu" id="user-menu" hidden>
+          <button type="button" data-user-nav="home">Home</button>
+          <button type="button" data-user-nav="account">My Account</button>
+          <button type="button" data-user-nav="history">My History</button>
+          <button type="button" data-user-nav="help">Help</button>
+          <button type="button" data-user-nav="logout">Logout</button>
+        </div>
+
+        <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+        <aside class="drawer" id="drawer" hidden>
+          <p class="drawer-label">Your roles</p>
+          <nav class="role-list" id="role-list"></nav>
+        </aside>
+
+        <div class="pop" id="pop" hidden>
+          <div class="pop-card" id="pop-card"></div>
+        </div>
+
+        <div class="stage" id="stage"></div>
+
+        <button type="button" class="cart-dock" id="cart-dock" hidden>
+          <span id="cart-dock-count">0</span>
+          <span>Cart</span>
+          <strong id="cart-dock-total"></strong>
+        </button>
+
+        <button type="button" class="run-dock" id="run-dock" hidden></button>
+        <nav class="run-nav" id="run-nav" hidden></nav>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
