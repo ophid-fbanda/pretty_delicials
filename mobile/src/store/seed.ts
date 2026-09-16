@@ -1,4 +1,4 @@
-import type { OrderLine, TeamRole } from "./types";
+import type { TeamRole } from "./types";
 
 export const ACCOUNTS = [
   { id: "seed-admin", name: "Admin", phone: "0771111111", email: "", disabled: 0, secret: "test123" },
@@ -77,7 +77,7 @@ type SeedOrder = {
   address: string | null;
   lat: number | null;
   lng: number | null;
-  lines: OrderLine[];
+  lines: { name: string; qty: number }[];
   reasons?: string[];
   notes?: string;
 };

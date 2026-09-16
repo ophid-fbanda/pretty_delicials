@@ -36,7 +36,7 @@ test("Client placeOrder becomes kitchen incoming then delivery ready", async () 
   const { session } = await store.login("0772220001", "test123");
   const id = await store.placeOrder({
     accountId: session.id,
-    lines: [{ name: "Sausage roll", qty: 2, productId: "sausage-roll", price: 2.5 }],
+    lines: [{ name: "Sausage roll", qty: 2, productId: "sausage-roll", unitPrice: 2.5 }],
     total: 5,
     fare: 3,
     locationName: "Home",
@@ -106,4 +106,25 @@ test("catalog items point at category ids, not names as keys", async () => {
   const sausage = catalog.items.find((row) => row.id === "i1");
   assert.equal(sausage?.categoryId, rolls.id);
   assert.equal(sausage?.category, "Rolls");
+});
+
+test("changing list price does not rewrite a sale", async () => {
+  const store = await openStore();
+  const { session } = await store.login("0772220001", "test123");
+  const id = await store.placeOrder({
+    accountId: session.id,
+    lines: [{ name: "Sausage roll", qty: 10, productId: "sausage-roll", unitPrice: 8 }],
+    total: 80,
+    fare: 0,
+    locationName: "Home",
+    pay: "Cash. Change to prepare: 0.00",
+  });
+  await store.setProductPrice("sausage-roll", 10);
+  const order = await store.getOrder(id);
+  assert.equal(order?.lines[0].qty, 10);
+  assert.equal(order?.lines[0].unitPrice, 8);
+  assert.equal(order?.lines[0].lineTotal, 80);
+  assert.equal(order?.total, 80);
+  const shop = (await store.shopProducts()).find((row) => row.id === "sausage-roll");
+  assert.equal(shop?.price, 10);
 });

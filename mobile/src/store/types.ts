@@ -106,7 +106,13 @@ export type MoneyRow = { id: string; note: string; amount: number };
 
 export type SavedLocation = { id: string; accountId: string; name: string; detail: string };
 
-export type OrderLine = { name: string; qty: number; productId?: string; price?: number };
+export type OrderLine = {
+  name: string;
+  qty: number;
+  productId: string | null;
+  unitPrice: number;
+  lineTotal: number;
+};
 
 export type OrderStep = { name: string; at: number | null; seq: number };
 
@@ -119,8 +125,8 @@ export type Order = {
   address: string | null;
   lat: number | null;
   lng: number | null;
-  total: number | null;
-  fare: number | null;
+  total: number;
+  fare: number;
   pay: string | null;
   cancelled: boolean;
   reasons: string[];

@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = "4";
+export const SCHEMA_VERSION = "5";
 
 export const RESET = `
 PRAGMA foreign_keys = OFF;
@@ -8,6 +8,8 @@ DROP TABLE IF EXISTS order_lines;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS item_prices;
+DROP TABLE IF EXISTS product_prices;
 DROP TABLE IF EXISTS shop_products;
 DROP TABLE IF EXISTS catalog_items;
 DROP TABLE IF EXISTS categories;
@@ -86,16 +88,28 @@ CREATE TABLE IF NOT EXISTS catalog_items (
   category_id INTEGER NOT NULL REFERENCES categories(id),
   size_id INTEGER NOT NULL REFERENCES sizes(id),
   flavour_id INTEGER NOT NULL REFERENCES flavours(id),
-  price REAL NOT NULL,
   available INTEGER NOT NULL DEFAULT 1 CHECK (available IN (0, 1)),
   UNIQUE (category_id, size_id, flavour_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_prices (
+  id INTEGER PRIMARY KEY,
+  item_id TEXT NOT NULL REFERENCES catalog_items(id),
+  amount REAL NOT NULL,
+  set_at INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS shop_products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  category_id INTEGER NOT NULL REFERENCES categories(id),
-  price REAL NOT NULL
+  category_id INTEGER NOT NULL REFERENCES categories(id)
+);
+
+CREATE TABLE IF NOT EXISTS product_prices (
+  id INTEGER PRIMARY KEY,
+  product_id TEXT NOT NULL REFERENCES shop_products(id),
+  amount REAL NOT NULL,
+  set_at INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS vehicles (
@@ -143,8 +157,8 @@ CREATE TABLE IF NOT EXISTS orders (
   address TEXT,
   lat REAL,
   lng REAL,
-  total REAL,
-  fare REAL,
+  total REAL NOT NULL,
+  fare REAL NOT NULL DEFAULT 0,
   pay TEXT,
   cancelled INTEGER NOT NULL DEFAULT 0 CHECK (cancelled IN (0, 1)),
   notes TEXT NOT NULL DEFAULT '',
@@ -152,12 +166,13 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 CREATE TABLE IF NOT EXISTS order_lines (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   qty INTEGER NOT NULL,
   product_id TEXT REFERENCES shop_products(id) ON DELETE SET NULL,
-  price REAL
+  unit_price REAL NOT NULL,
+  line_total REAL NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_steps (
