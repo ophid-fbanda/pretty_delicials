@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dutyN = people.filter((p) => p.roles.length && p.onDuty).length;
     const stuckN = kitchenOrders.filter((o) => o.mins > 30 && o.status !== "delivered" && o.status !== "cancelled" && o.status !== "rejected").length;
     stage.innerHTML = `<h2 class="page-h">Management</h2>
-      <div class="choice share">
+      <div class="choice">
         ${choiceCard("mgmt-branches", "Branches", openN + " open of " + branches.length)}
         ${choiceCard("mgmt-products", "Products", itemN + " items")}
         ${choiceCard("mgmt-vehicles", "Vehicles", outN + " out")}
@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderProductsHub() {
     stage.innerHTML = `${backBtn("mgmt", "Back")}
       <h2 class="page-h">Products</h2>
-      <div class="choice share">
+      <div class="choice">
         ${choiceCard("mgmt-categories", "Categories", catalog.categories.length + "")}
         ${choiceCard("mgmt-sizes", "Sizes", catalog.sizes.length + "")}
         ${choiceCard("mgmt-flavours", "Flavours", catalog.flavours.length + "")}
@@ -413,9 +413,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const cards = vehicles
       .map((v) => {
         const who = v.assigneeId ? personName(v.assigneeId) : "No assignee";
-        return `<button type="button" class="history-item" data-open-vehicle="${v.id}">
+        return `<button type="button" class="who-card fit" data-open-vehicle="${v.id}">
           <strong>${v.plate}</strong>
-          <div class="meta">${v.status} · ${who} · fuel ${v.fuel}%</div>
+          <p class="muted">${v.status} · ${who} · fuel ${v.fuel}%</p>
         </button>`;
       })
       .join("");
@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderFinanceHub() {
     stage.innerHTML = `${backBtn("mgmt", "Back")}
       <h2 class="page-h">Finance</h2>
-      <div class="choice share">
+      <div class="choice">
         ${choiceCard("mgmt-expenses", "Expenses", expenses.length + "")}
         ${choiceCard("mgmt-adjustments", "Adjustments", adjustments.length + "")}
         ${choiceCard("mgmt-reports", "Reports", "today")}
