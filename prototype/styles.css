@@ -1489,7 +1489,8 @@ button.who-card p {
   font-weight: 800;
 }
 
-.pop-card .accept {
+.pop-card .accept,
+.pop-card .submit {
   width: 100%;
   margin-top: 0.45rem;
 }
