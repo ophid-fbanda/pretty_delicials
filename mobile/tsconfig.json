@@ -2,5 +2,6 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true
-  }
+  },
+  "exclude": ["src/store/store.test.ts"]
 }

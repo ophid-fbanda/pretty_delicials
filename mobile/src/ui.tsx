@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps, type ViewStyle } from "react-native";
+import type { ReactNode } from "react";
+import { Image, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import type { Theme } from "./theme";
 import { sans, sansBold, sansSemi, serif } from "./theme";
 
@@ -54,7 +55,7 @@ export function ChoiceCard({ t, title, sub, onPress }: { t: Theme; title: string
   );
 }
 
-export function WhoCard({ t, children, onPress, fit }: { t: Theme; children: React.ReactNode; onPress?: () => void; fit?: boolean }) {
+export function WhoCard({ t, children, onPress, fit }: { t: Theme; children: ReactNode; onPress?: () => void; fit?: boolean }) {
   const body = (
     <View style={[ui.who, { backgroundColor: t.card, borderColor: t.hair, minHeight: fit ? 0 : 180 }, !onPress && ui.whoPad]}>{children}</View>
   );
@@ -77,7 +78,7 @@ export function Field({
   optional,
   dark,
   ...input
-}: { t: Theme; label: string; optional?: boolean; dark?: boolean } & TextInputProps) {
+}: { t: Pick<Theme, "muted" | "card" | "ink" | "hair">; label: string; optional?: boolean; dark?: boolean } & TextInputProps) {
   return (
     <View style={{ gap: 6 }}>
       <Text style={[ui.fieldLabel, { color: dark ? "#c9bba8" : t.muted }]}>
@@ -160,7 +161,7 @@ export function Face({ size, ring }: { size: number; ring?: boolean }) {
   );
 }
 
-export function ChoiceGrid({ children }: { children: React.ReactNode }) {
+export function ChoiceGrid({ children }: { children: ReactNode }) {
   return <View style={ui.choiceGrid}>{children}</View>;
 }
 
