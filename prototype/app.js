@@ -206,7 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <h2>${person.name}</h2>
           <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
           <div class="ticks">${ticksHtml(person)}</div>
-          <button type="button" class="submit save-roles" data-save-roles="${person.id}">Save</button>
+          <div class="who-actions">
+            <button type="button" class="ghost" data-reset-secret="${person.id}">Reset secret</button>
+            <button type="button" class="submit save-roles" data-save-roles="${person.id}">Save</button>
+          </div>
         </article>`;
       })
       .join("");
@@ -249,6 +252,18 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="ticks">${ticksHtml(person)}</div>
       <p class="error" id="recruit-error" hidden></p>
       <button type="button" class="submit" id="confirm-recruit" data-id="${person.id}">Confirm</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openResetSecret(id) {
+    const person = people.find((p) => p.id === id);
+    if (!person) return;
+    popCard.innerHTML = `<h2>Reset secret</h2>
+      <p class="muted">${person.name} · ${person.phone}</p>
+      <label class="field"><span>New secret</span><input id="reset-secret" type="password" placeholder="New secret" /></label>
+      <p class="error" id="reset-error" hidden></p>
+      <button type="button" class="submit" id="confirm-reset" data-id="${person.id}">Confirm</button>
       <button type="button" class="ghost" id="close-pop">Close</button>`;
     pop.hidden = false;
   }
@@ -772,6 +787,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const recruit = event.target.closest("[data-recruit]");
     if (recruit) {
       openRecruit(recruit.dataset.recruit);
+      return;
+    }
+    const reset = event.target.closest("[data-reset-secret]");
+    if (reset) {
+      openResetSecret(reset.dataset.resetSecret);
     }
   });
 
@@ -828,7 +848,20 @@ document.addEventListener("DOMContentLoaded", () => {
       closePop();
       return;
     }
-    if (event.target.id === "confirm-recruit") {
+    if (event.target.id === "confirm-reset") {
+      const id = event.target.dataset.id;
+      const person = people.find((p) => p.id === id);
+      const next = (document.getElementById("reset-secret") || {}).value || "";
+      const err = document.getElementById("reset-error");
+      if (!next.trim()) {
+        err.textContent = "Enter a new secret.";
+        err.hidden = false;
+        return;
+      }
+      person.secret = next;
+      closePop();
+      return;
+    }
       const id = event.target.dataset.id;
       const person = people.find((p) => p.id === id);
       const roles = roleDrafts[id] || [];
