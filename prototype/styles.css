@@ -1106,6 +1106,109 @@ button.who-card p {
   padding: 0.7rem 0.5rem;
 }
 
+.work-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin: 0 0 0.95rem;
+  border-radius: 999px;
+  background: #f3d08a;
+}
+
+.work-tab {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7a3214;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.62rem 0.2rem;
+}
+
+.work-tab.is-on {
+  background: #fffaf3;
+  box-shadow: 0 6px 14px rgba(122, 50, 20, 0.12);
+}
+
+.work-tab em {
+  font-style: normal;
+  font-size: 0.7rem;
+  background: #c45c1a;
+  color: #fff8f0;
+  border-radius: 999px;
+  padding: 0.08rem 0.38rem;
+  margin-left: 0.12rem;
+}
+
+.ticket-no {
+  letter-spacing: 0.04em;
+}
+
+.ticket-no.big {
+  margin: 0.2rem 0 0.15rem;
+  color: #c45c1a;
+  font-size: 1.7rem;
+  font-weight: 800;
+}
+
+.bits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.bit {
+  background: #fde8d0;
+  color: #7a3214;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.act-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 1.15rem;
+}
+
+.accept,
+.reject-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  border-radius: 1.15rem;
+  padding: 1.05rem 0.6rem;
+}
+
+.accept {
+  background: linear-gradient(180deg, #4aa35e, #2f7d4a);
+  color: #fff;
+}
+
+.reject-btn {
+  background: linear-gradient(180deg, #e07038, #c45c1a);
+  color: #fff8f0;
+  width: 100%;
+}
+
+.pop-card .reject-btn {
+  margin-top: 0.35rem;
+}
+
+.phone.is-app .field textarea {
+  min-height: 5.2rem;
+  resize: none;
+}
+
 @media (min-width: 500px) {
   .phone {
     min-height: 820px;

@@ -68,6 +68,18 @@ document.addEventListener("DOMContentLoaded", () => {
     { id: "PD-1034", status: "rejected", mins: 6, staffId: "seed-k" },
     { id: "PD-1033", status: "processing", mins: 41, staffId: "seed-k" },
   ];
+  const REJECT_REASONS = ["Out of stock", "Too busy", "Can't make this", "Other"];
+  let bakeOrders = [
+    { id: "PD-1042", status: "incoming", mins: 3, lines: [{ name: "Sausage roll", qty: 4 }, { name: "Chicken wrap", qty: 2 }], reasons: [], notes: "" },
+    { id: "PD-1041", status: "incoming", mins: 8, lines: [{ name: "Steak pie", qty: 2 }], reasons: [], notes: "" },
+    { id: "PD-1040", status: "processing", mins: 14, lines: [{ name: "Mini rolls", qty: 1 }, { name: "Veg samosa", qty: 6 }], reasons: [], notes: "" },
+    { id: "PD-1039", status: "ready", mins: 22, lines: [{ name: "Chicken pie", qty: 3 }], reasons: [], notes: "" },
+    { id: "PD-1036", status: "in transit", mins: 35, lines: [{ name: "Beef samosa", qty: 10 }], reasons: [], notes: "" },
+    { id: "PD-1035", status: "delivered", mins: 50, lines: [{ name: "Salad wrap", qty: 1 }], reasons: [], notes: "" },
+  ];
+  let kitchenTab = "incoming";
+  let kitchenOpenId = null;
+  let rejectDraft = { reasons: [], notes: "" };
   let selectedVehicleId = null;
   const MGMT_VIEWS = new Set([
     "mgmt",
@@ -198,6 +210,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return MGMT_VIEWS.has(view);
   }
 
+  function isKitchenView() {
+    return view === "kitchen";
+  }
+
   function personName(id) {
     const person = people.find((p) => p.id === id);
     return person ? person.name : "—";
@@ -216,9 +232,10 @@ document.addEventListener("DOMContentLoaded", () => {
     roleList.innerHTML = items
       .map((item) => {
         const on =
-          (item.view === "home" && !isAdminView() && !isMgmtView()) ||
+          (item.view === "home" && !isAdminView() && !isMgmtView() && !isKitchenView()) ||
           (item.view === "admin" && isAdminView()) ||
-          (item.view === "mgmt" && isMgmtView());
+          (item.view === "mgmt" && isMgmtView()) ||
+          (item.view === "kitchen" && isKitchenView());
         return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-view="${item.view}">${item.label}</button>`;
       })
       .join("");
@@ -533,6 +550,110 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="k-staff">${chips}</div>
       <p class="muted">Today's orders</p>
       ${cards}`;
+  }
+
+  function bakeLinesHtml(order) {
+    return order.lines
+      .map((line) => `<div class="line"><strong>${line.name}</strong><span>${line.qty}</span></div>`)
+      .join("");
+  }
+
+  function bakeBits(order) {
+    return order.lines.map((line) => `<span class="bit">${line.qty} ${line.name}</span>`).join("");
+  }
+
+  function kitchenTabsHtml() {
+    const incomingN = bakeOrders.filter((o) => o.status === "incoming").length;
+    const benchN = bakeOrders.filter((o) => o.status === "processing").length;
+    const tabs = [
+      ["incoming", "Incoming", incomingN],
+      ["bench", "Kitchen", benchN],
+      ["out", "Out", null],
+    ];
+    return `<div class="work-tabs">${tabs
+      .map(
+        ([id, label, n]) =>
+          `<button type="button" class="work-tab${kitchenTab === id ? " is-on" : ""}" data-k-tab="${id}">${label}${
+            n == null ? "" : ` <em>${n}</em>`
+          }</button>`
+      )
+      .join("")}</div>`;
+  }
+
+  function bakeTicket(order, kind) {
+    const flag =
+      kind === "out"
+        ? `<span class="flag ${order.status === "rejected" ? "shut" : order.status === "delivered" || order.status === "ready" ? "open" : "out"}">${order.status}</span>`
+        : `<span class="muted">${order.mins} min</span>`;
+    return `<button type="button" class="who-card fit ticket" data-k-open="${order.id}">
+      <div class="who-top"><strong class="ticket-no">${order.id}</strong>${flag}</div>
+      <div class="bits">${bakeBits(order)}</div>
+    </button>`;
+  }
+
+  function renderKitchenRole() {
+    if (kitchenOpenId) {
+      renderBakeOpen();
+      return;
+    }
+    let body = "";
+    if (kitchenTab === "incoming") {
+      const list = bakeOrders.filter((o) => o.status === "incoming");
+      body = list.map((o) => bakeTicket(o, "incoming")).join("") || `<p class="muted">No incoming orders.</p>`;
+    } else if (kitchenTab === "bench") {
+      const list = bakeOrders.filter((o) => o.status === "processing");
+      body = list.map((o) => bakeTicket(o, "bench")).join("") || `<p class="muted">Nothing on the bench.</p>`;
+    } else {
+      const list = bakeOrders.filter((o) => !["incoming", "processing"].includes(o.status));
+      body = list.map((o) => bakeTicket(o, "out")).join("") || `<p class="muted">Nothing past the kitchen yet.</p>`;
+    }
+    stage.innerHTML = `<h2 class="page-h">Kitchen</h2>${kitchenTabsHtml()}<div class="who-grid">${body}</div>`;
+  }
+
+  function renderBakeOpen() {
+    const order = bakeOrders.find((o) => o.id === kitchenOpenId);
+    if (!order) {
+      kitchenOpenId = null;
+      renderKitchenRole();
+      return;
+    }
+    const incoming = order.status === "incoming";
+    const onBench = order.status === "processing";
+    let actions = `<p class="muted">Kitchen cannot change this now.</p>`;
+    if (incoming) {
+      actions = `<div class="act-row">
+        <button type="button" class="accept" data-accept-bake="${order.id}">Accept</button>
+        <button type="button" class="reject-btn" data-reject-bake="${order.id}">Reject</button>
+      </div>`;
+    } else if (onBench) {
+      actions = `<button type="button" class="submit" data-ready-bake="${order.id}">Ready</button>`;
+    } else if (order.status === "rejected") {
+      const why = order.reasons.length ? order.reasons.join(", ") : "Rejected";
+      actions = `<p class="muted">Rejected. Kitchen cannot change this now.</p>
+        <p class="muted">${why}${order.notes ? " — " + order.notes : ""}</p>`;
+    }
+    stage.innerHTML = `<button type="button" class="ghost back" data-k-back>Back</button>
+      <p class="ticket-no big">${order.id}</p>
+      <p class="muted">${order.mins} min</p>
+      ${bakeLinesHtml(order)}
+      ${actions}`;
+  }
+
+  function openReject(id) {
+    const order = bakeOrders.find((o) => o.id === id);
+    if (!order) return;
+    rejectDraft = { reasons: [], notes: "" };
+    const ticks = REJECT_REASONS.map(
+      (reason) => `<label class="tick"><input type="checkbox" data-reject-tick value="${reason}" /> ${reason}</label>`
+    ).join("");
+    popCard.innerHTML = `<h2>Reject ${order.id}</h2>
+      <p class="muted">Tick why. Notes are optional.</p>
+      <div class="ticks">${ticks}</div>
+      <label class="field"><span>Notes</span><textarea id="reject-notes" rows="3" placeholder="Anything the team should know"></textarea></label>
+      <p class="error" id="reject-error" hidden></p>
+      <button type="button" class="reject-btn" id="confirm-reject" data-id="${order.id}">Confirm reject</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
   }
 
   function renderMore() {
@@ -931,6 +1052,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (view === "mgmt-reports") renderReports();
     else if (view === "mgmt-kitchen") renderKitchen();
     else if (view === "mgmt-more") renderMore();
+    else if (view === "kitchen") renderKitchenRole();
     renderCartDock();
   }
 
@@ -938,7 +1060,10 @@ document.addEventListener("DOMContentLoaded", () => {
     user = nextUser;
     if (nextUser.roles.includes("Admin")) view = "admin";
     else if (nextUser.roles.includes("Management")) view = "mgmt";
+    else if (nextUser.roles.includes("Kitchen")) view = "kitchen";
     else view = "home";
+    kitchenTab = "incoming";
+    kitchenOpenId = null;
     category = "All";
     authScreen.hidden = true;
     appScreen.hidden = false;
@@ -1062,6 +1187,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!btn) return;
     closeOverlays();
     view = btn.dataset.view;
+    if (view === "kitchen") {
+      kitchenTab = "incoming";
+      kitchenOpenId = null;
+    }
     render();
   });
 
@@ -1257,6 +1386,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (event.target.id === "add-fare") {
       openAddFare();
+      return;
+    }
+    const kTab = event.target.closest("[data-k-tab]");
+    if (kTab) {
+      kitchenTab = kTab.dataset.kTab;
+      kitchenOpenId = null;
+      render();
+      return;
+    }
+    const kOpen = event.target.closest("[data-k-open]");
+    if (kOpen) {
+      kitchenOpenId = kOpen.dataset.kOpen;
+      render();
+      return;
+    }
+    if (event.target.closest("[data-k-back]")) {
+      kitchenOpenId = null;
+      render();
+      return;
+    }
+    const acceptBake = event.target.closest("[data-accept-bake]");
+    if (acceptBake) {
+      const order = bakeOrders.find((o) => o.id === acceptBake.dataset.acceptBake);
+      if (order && order.status === "incoming") {
+        order.status = "processing";
+        kitchenOpenId = null;
+        kitchenTab = "bench";
+      }
+      render();
+      return;
+    }
+    const rejectBake = event.target.closest("[data-reject-bake]");
+    if (rejectBake) {
+      openReject(rejectBake.dataset.rejectBake);
+      return;
+    }
+    const readyBake = event.target.closest("[data-ready-bake]");
+    if (readyBake) {
+      const order = bakeOrders.find((o) => o.id === readyBake.dataset.readyBake);
+      if (order && order.status === "processing") {
+        order.status = "ready";
+        kitchenOpenId = null;
+        kitchenTab = "bench";
+      }
+      render();
     }
   });
 
@@ -1319,6 +1493,25 @@ document.addEventListener("DOMContentLoaded", () => {
   pop.addEventListener("click", (event) => {
     if (event.target === pop || event.target.id === "close-pop") {
       closePop();
+      return;
+    }
+    if (event.target.id === "confirm-reject") {
+      const order = bakeOrders.find((o) => o.id === event.target.dataset.id);
+      const err = document.getElementById("reject-error");
+      if (!rejectDraft.reasons.length) {
+        err.textContent = "Tick at least one reason.";
+        err.hidden = false;
+        return;
+      }
+      if (order && order.status === "incoming") {
+        order.status = "rejected";
+        order.reasons = rejectDraft.reasons.slice();
+        order.notes = ((document.getElementById("reject-notes") || {}).value || "").trim();
+      }
+      closePop();
+      kitchenOpenId = null;
+      kitchenTab = "incoming";
+      render();
       return;
     }
     if (event.target.id === "confirm-rename") {
@@ -1459,6 +1652,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   pop.addEventListener("change", (event) => {
+    const rejectTick = event.target.closest("[data-reject-tick]");
+    if (rejectTick) {
+      const reason = rejectTick.value;
+      rejectDraft.reasons = rejectTick.checked
+        ? REJECT_REASONS.filter((item) => rejectDraft.reasons.includes(item) || item === reason)
+        : rejectDraft.reasons.filter((item) => item !== reason);
+      return;
+    }
     const tick = event.target.closest("[data-role-tick]");
     if (!tick) return;
     const id = tick.dataset.roleTick;
