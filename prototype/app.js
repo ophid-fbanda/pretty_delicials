@@ -862,6 +862,7 @@ document.addEventListener("DOMContentLoaded", () => {
       closePop();
       return;
     }
+    if (event.target.id === "confirm-recruit") {
       const id = event.target.dataset.id;
       const person = people.find((p) => p.id === id);
       const roles = roleDrafts[id] || [];
@@ -878,7 +879,6 @@ document.addEventListener("DOMContentLoaded", () => {
       view = "staff";
       render();
     }
-  });
 
   pop.addEventListener("change", (event) => {
     const tick = event.target.closest("[data-role-tick]");
