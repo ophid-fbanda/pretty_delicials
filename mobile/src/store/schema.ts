@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = "2";
+export const SCHEMA_VERSION = "3";
 
 export const RESET = `
 PRAGMA foreign_keys = OFF;
@@ -44,9 +44,10 @@ CREATE TABLE IF NOT EXISTS accounts (
 );
 
 CREATE TABLE IF NOT EXISTS account_roles (
+  id INTEGER PRIMARY KEY,
   account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('Admin', 'Management', 'Kitchen', 'Delivery')),
-  PRIMARY KEY (account_id, role)
+  UNIQUE (account_id, role)
 );
 
 CREATE TABLE IF NOT EXISTS staff (
@@ -157,16 +158,16 @@ CREATE TABLE IF NOT EXISTS order_lines (
 );
 
 CREATE TABLE IF NOT EXISTS order_steps (
+  id INTEGER PRIMARY KEY,
   order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   seq INTEGER NOT NULL,
   name TEXT NOT NULL,
-  at INTEGER,
-  PRIMARY KEY (order_id, seq)
+  at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS order_reject_reasons (
+  id INTEGER PRIMARY KEY,
   order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  reason TEXT NOT NULL,
-  PRIMARY KEY (order_id, reason)
+  reason TEXT NOT NULL
 );
 `;
