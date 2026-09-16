@@ -1213,11 +1213,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderHelp() {
     stage.innerHTML = `<h2 class="page-h">Help</h2>
-      <p class="muted">This is the look-and-behaviour prototype. Track an order by tapping its number. Roles other than Client are not built on this screen yet.</p>`;
+      <p class="muted">This is the look-and-behaviour prototype. Tap an order number to track it.</p>`;
+  }
+
+  function applyTheme() {
+    ["theme-client", "theme-admin", "theme-mgmt", "theme-kitchen", "theme-delivery"].forEach((name) => {
+      phoneShell.classList.remove(name);
+    });
+    let theme = "theme-client";
+    let title = "Pretty's";
+    if (isAdminView()) {
+      theme = "theme-admin";
+      title = "Office";
+    } else if (isMgmtView()) {
+      theme = "theme-mgmt";
+      title = "House";
+    } else if (isKitchenView()) {
+      theme = "theme-kitchen";
+      title = "Kitchen";
+    } else if (isDeliveryView()) {
+      theme = "theme-delivery";
+      title = "Run";
+    }
+    phoneShell.classList.add(theme);
+    const titleEl = document.getElementById("app-title-text");
+    if (titleEl) titleEl.textContent = title;
   }
 
   function render() {
     document.getElementById("avatar-letter").textContent = (user.name || "P").slice(0, 1).toUpperCase();
+    applyTheme();
     renderRoles();
     if (view === "home" || view === "client") renderHome();
     else if (view === "cart") renderCart();
@@ -1375,7 +1400,16 @@ document.addEventListener("DOMContentLoaded", () => {
       appScreen.hidden = true;
       authScreen.hidden = false;
       closePop();
-      phoneShell.classList.remove("is-app", "has-run", "has-run-dock");
+      phoneShell.classList.remove(
+        "is-app",
+        "has-run",
+        "has-run-dock",
+        "theme-client",
+        "theme-admin",
+        "theme-mgmt",
+        "theme-kitchen",
+        "theme-delivery"
+      );
       runNav.hidden = true;
       runDock.hidden = true;
       secretInput.value = "";

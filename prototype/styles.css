@@ -22,7 +22,7 @@ body {
   min-height: 100%;
   background: #050505;
   color: var(--paper);
-  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  font-family: Karla, "Avenir Next", "Segoe UI", system-ui, sans-serif;
 }
 
 body {
@@ -43,22 +43,42 @@ body {
 }
 
 .phone.is-app {
+  --bg: #f0d7b8;
+  --glow: rgba(196, 92, 26, 0.22);
+  --card: #fff8ee;
+  --ink: #2a160c;
+  --muted: #8a5230;
+  --hair: #e4c8a8;
+  --bar-bg: #b44514;
+  --bar-ink: #fff6e8;
+  --accent: #c4892e;
+  --go: #4d6b32;
+  --stop: #b44514;
+  --chip: #f3d08a;
+  --shadow: 0 14px 30px rgba(72, 28, 8, 0.12);
   padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #f6e6d2;
-  color: #3a2418;
+  background:
+    radial-gradient(80% 28% at 50% -6%, var(--glow), transparent 58%),
+    var(--bg);
+  color: var(--ink);
 }
 
 .phone.is-app .titlebar {
-  background: #c45c1a;
+  height: 3.7rem;
+  background: var(--bar-bg);
   border-bottom: 0;
-  color: #fff8f0;
+  color: var(--bar-ink);
 }
 
 .phone.is-app .app-title {
-  color: #fff8f0;
+  color: var(--bar-ink);
+}
+
+.phone.is-app .icon-btn span {
+  background: var(--bar-ink);
 }
 
 .phone.is-app .user-menu {
@@ -173,7 +193,16 @@ body {
 .brand {
   display: grid;
   place-items: center;
-  padding: 0.4rem 0 1.6rem;
+  padding: 0.4rem 0 1.2rem;
+}
+
+.brand-name {
+  margin: 0.95rem 0 0;
+  color: var(--gold);
+  font-family: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
 }
 
 .face-ring {
@@ -343,7 +372,7 @@ body {
 }
 
 .titlebar {
-  height: var(--bar);
+  height: 3.7rem;
   display: grid;
   grid-template-columns: var(--bar) 1fr var(--bar);
   align-items: center;
@@ -355,10 +384,22 @@ body {
 
 .app-title {
   margin: 0;
-  text-align: center;
-  font-size: 1.15rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-family: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.bar-face {
+  width: 1.7rem;
+  height: 1.7rem;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #e0a84a, 0 0 0 3px rgba(26, 17, 6, 0.35);
 }
 
 .icon-btn {
@@ -726,7 +767,10 @@ body {
 
 .page-h {
   margin: 0 0 0.85rem;
-  font-size: 1.25rem;
+  font-family: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .muted {
@@ -1511,4 +1555,311 @@ button.who-card p {
   .app {
     min-height: 820px;
   }
+}
+
+.phone.is-app.theme-client {
+  --bg: #f3d9b6;
+  --glow: rgba(196, 92, 26, 0.28);
+  --card: #fff8ee;
+  --ink: #2a160c;
+  --muted: #8a5230;
+  --hair: #e4c8a8;
+  --bar-bg: #b44514;
+  --bar-ink: #fff6e8;
+  --accent: #d4a03a;
+  --go: #4d6b32;
+  --stop: #b44514;
+  --chip: #f3d08a;
+}
+
+.phone.is-app.theme-admin {
+  --bg: #e4d6c2;
+  --glow: rgba(80, 52, 24, 0.18);
+  --card: #f7f0e4;
+  --ink: #1c1410;
+  --muted: #6e5340;
+  --hair: #d4c3aa;
+  --bar-bg: #2a1d14;
+  --bar-ink: #f3e6d2;
+  --accent: #b8893a;
+  --go: #3f5a38;
+  --stop: #8a3d22;
+  --chip: #e4d0a8;
+}
+
+.phone.is-app.theme-mgmt {
+  --bg: #ead9a8;
+  --glow: rgba(160, 110, 20, 0.22);
+  --card: #fff8e6;
+  --ink: #2a1808;
+  --muted: #7a5a20;
+  --hair: #e0cc8c;
+  --bar-bg: #8a5310;
+  --bar-ink: #fff6e0;
+  --accent: #c4892e;
+  --go: #4d6b32;
+  --stop: #a34a14;
+  --chip: #f3d08a;
+}
+
+.phone.is-app.theme-kitchen {
+  --bg: #f4e4cc;
+  --glow: rgba(160, 50, 16, 0.16);
+  --card: #fff9f2;
+  --ink: #2c140c;
+  --muted: #865038;
+  --hair: #e8cbb0;
+  --bar-bg: #7a2e12;
+  --bar-ink: #fff4e6;
+  --accent: #c45c1a;
+  --go: #4a6430;
+  --stop: #a33a14;
+  --chip: #f0d4a0;
+}
+
+.phone.is-app.theme-delivery {
+  --bg: #d9cbb0;
+  --glow: rgba(36, 22, 12, 0.18);
+  --card: #f4ead8;
+  --ink: #1a120c;
+  --muted: #6a4a32;
+  --hair: #cbb898;
+  --bar-bg: #1a120c;
+  --bar-ink: #f3e2c8;
+  --accent: #c4892e;
+  --go: #3d5c38;
+  --stop: #8a2e14;
+  --chip: #e2c48a;
+}
+
+.phone.is-app .page-h,
+.phone.is-app .line strong,
+.phone.is-app .tl-body,
+.phone.is-app .prow-words h2,
+.phone.is-app .who-card h2 {
+  color: var(--ink);
+}
+
+.phone.is-app .muted,
+.phone.is-app .stamp,
+.phone.is-app .choice-card span,
+.phone.is-app .prow-words p,
+.phone.is-app .prow-total,
+.phone.is-app .run-kicker {
+  color: var(--muted);
+}
+
+.phone.is-app .line {
+  border-color: var(--hair);
+}
+
+.phone.is-app .ghost {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: transparent;
+}
+
+.phone.is-app .pay-btn,
+.phone.is-app .history-item,
+.phone.is-app .field input,
+.phone.is-app .field select,
+.phone.is-app .field textarea {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--hair);
+}
+
+.phone.is-app .order-number,
+.phone.is-app .ticket-no.big {
+  color: var(--accent);
+}
+
+.phone.is-app .submit {
+  background: var(--accent);
+  color: #1a1106;
+}
+
+.phone.is-app .choice-card,
+.phone.is-app .who-card,
+.phone.is-app .k-order,
+.phone.is-app .prow,
+.phone.is-app .slip,
+.phone.is-app .stop,
+.phone.is-app .map-note,
+.phone.is-app .pop-card {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--hair);
+  box-shadow: var(--shadow);
+}
+
+.phone.is-app .choice-card {
+  background: var(--card);
+}
+
+.phone.is-app .choice-card::before,
+.phone.is-app .choice-card:nth-child(n)::before {
+  background: var(--accent);
+  height: 3px;
+}
+
+.phone.is-app .choice-card strong {
+  font-family: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+  font-weight: 600;
+}
+
+.phone.is-app .prow {
+  background: var(--card);
+  border-color: var(--hair);
+}
+
+.phone.is-app .chip {
+  background: var(--chip);
+  color: var(--ink);
+}
+
+.phone.is-app .qty-btn {
+  background: var(--go);
+}
+
+.phone.is-app .qty-btn.minus {
+  background: var(--stop);
+}
+
+.phone.is-app .qty-val {
+  color: var(--ink);
+}
+
+.phone.is-app .prow-price {
+  color: var(--stop);
+}
+
+.phone.is-app .accept {
+  background: var(--go);
+  color: #f7f4ea;
+}
+
+.phone.is-app .reject-btn {
+  background: var(--stop);
+  color: #fff6e8;
+}
+
+.phone.is-app .work-tabs {
+  background: var(--chip);
+}
+
+.phone.is-app .work-tab {
+  color: var(--ink);
+}
+
+.phone.is-app .work-tab.is-on {
+  background: var(--card);
+  color: var(--ink);
+}
+
+.phone.is-app .work-tab em {
+  background: var(--stop);
+}
+
+.phone.is-app .bit {
+  background: var(--chip);
+  color: var(--ink);
+}
+
+.phone.is-app .flag.open {
+  color: var(--go);
+}
+
+.phone.is-app .flag.shut,
+.phone.is-app .flag.stuck {
+  color: var(--stop);
+}
+
+.phone.is-app .drawer {
+  background: var(--card);
+  border-right-color: var(--hair);
+}
+
+.phone.is-app .drawer-label {
+  color: var(--muted);
+}
+
+.phone.is-app .role-btn {
+  color: var(--ink);
+}
+
+.phone.is-app .role-btn.is-on {
+  background: var(--chip);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.phone.is-app .user-menu {
+  background: var(--card);
+  border-color: var(--hair);
+}
+
+.phone.is-app .user-menu button {
+  color: var(--ink);
+}
+
+.phone.is-app .user-menu button:hover,
+.phone.is-app .user-menu button:focus {
+  background: var(--chip);
+}
+
+.phone.is-app .cart-dock {
+  background: var(--accent);
+  color: #1a1106;
+}
+
+.phone.is-app .run-nav {
+  background: #1a120c;
+}
+
+.phone.is-app.theme-delivery .run-nav button.is-on {
+  background: #c4892e;
+  color: #1a120c;
+}
+
+.phone.is-app.theme-kitchen .stage {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 27px,
+    rgba(180, 120, 70, 0.07) 27px,
+    rgba(180, 120, 70, 0.07) 28px
+  );
+}
+
+.phone.is-app.theme-admin .choice-card::before {
+  background: #2a1d14;
+}
+
+.phone.is-app.theme-mgmt .choice-card::before {
+  background: #8a5310;
+}
+
+.phone.is-app.theme-admin .page-h {
+  font-size: 1.7rem;
+}
+
+.phone.is-app .pop-card h2,
+.phone.is-app .ticket-no.big {
+  font-family: Fraunces, "Iowan Old Style", Palatino, Georgia, serif;
+}
+
+.phone.is-app .slip.is-on {
+  border-color: var(--go);
+  box-shadow: inset 0 0 0 1px var(--go), var(--shadow);
+}
+
+.phone.is-app .slip.is-on .slip-mark {
+  background: var(--go);
+  border-color: var(--go);
+}
+
+.phone.is-app .stop-n {
+  background: var(--chip);
+  color: var(--ink);
 }
