@@ -180,17 +180,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const qty = cart[item.id] || 0;
         const lineTotal = item.price * qty;
         return `<article class="prow">
-          <div class="prow-pic">
-            <img src="img/face.jpg" alt="" />
-            <span>${item.name}</span>
+          <img class="prow-pic" src="img/face.jpg" alt="" />
+          <div class="prow-words">
+            <h2>${item.name}</h2>
+            <p>${item.category}</p>
           </div>
-          <div class="prow-price">${money(item.price)}</div>
-          <div class="qty">
-            <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="-1">−</button>
+          <div class="prow-money">
+            <div class="prow-price">${money(item.price)}</div>
+            <div class="prow-total">${qty ? money(lineTotal) : ""}</div>
+          </div>
+          <div class="qty qty-vert">
+            <button type="button" class="qty-btn plus" data-qty="${item.id}" data-dir="1">+</button>
             <span class="qty-val">${qty}</span>
-            <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="1">+</button>
+            <button type="button" class="qty-btn minus" data-qty="${item.id}" data-dir="-1">−</button>
           </div>
-          <div class="prow-total">${qty ? money(lineTotal) : "—"}</div>
         </article>`;
       })
       .join("");

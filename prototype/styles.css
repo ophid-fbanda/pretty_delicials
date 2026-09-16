@@ -47,6 +47,103 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: #f6e6d2;
+  color: #3a2418;
+}
+
+.phone.is-app .titlebar {
+  background: #c45c1a;
+  border-bottom: 0;
+  color: #fff8f0;
+}
+
+.phone.is-app .app-title {
+  color: #fff8f0;
+}
+
+.phone.is-app .user-menu {
+  background: #fffaf3;
+  border-color: #efdcc4;
+}
+
+.phone.is-app .user-menu button {
+  color: #3a2418;
+}
+
+.phone.is-app .user-menu button:hover,
+.phone.is-app .user-menu button:focus {
+  background: #f3d08a;
+}
+
+.phone.is-app .drawer {
+  background: #fff6ea;
+  border-right-color: #efdcc4;
+}
+
+.phone.is-app .drawer-label {
+  color: #9a5a2a;
+}
+
+.phone.is-app .role-btn {
+  color: #3a2418;
+}
+
+.phone.is-app .role-btn.is-on {
+  background: #f3d08a;
+  color: #7a3214;
+  box-shadow: none;
+}
+
+.phone.is-app .page-h,
+.phone.is-app .line strong,
+.phone.is-app .tl-body {
+  color: #3a2418;
+}
+
+.phone.is-app .muted,
+.phone.is-app .stamp {
+  color: #9a5a2a;
+}
+
+.phone.is-app .line {
+  border-color: #efdcc4;
+}
+
+.phone.is-app .ghost {
+  color: #3a2418;
+  border-color: #d4a574;
+}
+
+.phone.is-app .pay-btn,
+.phone.is-app .history-item,
+.phone.is-app .field input,
+.phone.is-app .field select {
+  background: #fffaf3;
+  color: #3a2418;
+  border-color: #efdcc4;
+}
+
+.phone.is-app .order-number {
+  color: #c45c1a;
+}
+
+.phone.is-app .tl-rail::before {
+  background: #e0c8a4;
+}
+
+.phone.is-app .tl.is-done .tl-rail::before {
+  background: #c45c1a;
+}
+
+.phone.is-app .tl-node {
+  background: #fffaf3;
+  border-color: #d4a574;
+}
+
+.phone.is-app .tl.is-done .tl-node,
+.phone.is-app .tl.is-now .tl-node {
+  background: #c45c1a;
+  border-color: #c45c1a;
 }
 
 .glow {
@@ -383,66 +480,80 @@ body {
   flex: 0 0 auto;
   border-radius: 999px;
   padding: 0.55rem 0.95rem;
-  background: var(--panel);
-  color: var(--paper);
-  border: 1px solid var(--line);
+  background: #fde8d0;
+  color: #5a2a0c;
+  border: 0;
   font-weight: 650;
   font-size: 0.88rem;
 }
 
+.chip[data-cat="Rolls"] { background: #f3d08a; }
+.chip[data-cat="Wraps"] { background: #b7d9a8; }
+.chip[data-cat="Pies"] { background: #f0b07a; }
+.chip[data-cat="Samosas"] { background: #f0c96a; }
+
 .chip.is-on {
-  background: var(--paper);
-  color: var(--ink);
+  box-shadow: inset 0 0 0 2px #7a3214;
 }
 
 .products {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.7rem;
 }
 
 .prow {
   display: grid;
-  grid-template-columns: 4.6rem 3.4rem minmax(6.2rem, 1fr) auto;
+  grid-template-columns: 5.4rem 1fr auto 2.55rem;
   align-items: center;
-  gap: 0.55rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  padding: 0.5rem 0.6rem;
+  gap: 0.65rem;
+  background: #fffaf3;
+  border: 1px solid #efdcc4;
+  border-radius: 1.15rem;
+  padding: 0.55rem 0.55rem 0.55rem 0.55rem;
+  box-shadow: 0 8px 18px rgba(122, 50, 20, 0.08);
 }
 
 .prow-pic {
+  width: 5.2rem;
+  height: 5.2rem;
+  object-fit: cover;
+  border-radius: 1rem;
+  background: #e8c9a0;
+}
+
+.prow-words h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  color: #3a2418;
+}
+
+.prow-words p {
+  margin: 0;
+  color: #9a5a2a;
+  font-size: 0.82rem;
+}
+
+.prow-money {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-}
-
-.prow-pic img {
-  width: 4.4rem;
-  height: 4.4rem;
-  object-fit: cover;
-  border-radius: 0.75rem;
-  background: #000;
-}
-
-.prow-pic span {
-  font-size: 0.68rem;
-  line-height: 1.15;
-  color: var(--muted);
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 3.4rem;
+  min-height: 2.8rem;
 }
 
 .prow-price {
-  color: var(--gold);
+  color: #c45c1a;
   font-weight: 800;
-  font-size: 0.92rem;
+  font-size: 1.02rem;
 }
 
 .prow-total {
+  min-height: 1.05rem;
+  color: #3a2418;
   font-weight: 800;
-  font-size: 0.95rem;
-  text-align: right;
-  min-width: 3.2rem;
+  font-size: 0.92rem;
 }
 
 .qty {
@@ -452,21 +563,31 @@ body {
   gap: 0.4rem;
 }
 
+.qty-vert {
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
 .qty-btn {
   width: 1.85rem;
   height: 1.85rem;
   border-radius: 50%;
-  background: var(--gold);
-  color: #1a1106;
+  background: #2f7d4a;
+  color: #fff;
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1;
 }
 
+.qty-btn.minus {
+  background: #c45c1a;
+}
+
 .qty-val {
   min-width: 1.1rem;
   text-align: center;
-  font-weight: 700;
+  font-weight: 800;
+  color: #3a2418;
 }
 
 .timeline {
