@@ -626,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <button type="button" class="reject-btn" data-reject-bake="${order.id}">Reject</button>
       </div>`;
     } else if (onBench) {
-      actions = `<button type="button" class="submit" data-ready-bake="${order.id}">Ready</button>`;
+      actions = `<button type="button" class="submit ready-go" data-ready-bake="${order.id}">Ready</button>`;
     } else if (order.status === "rejected") {
       const why = order.reasons.length ? order.reasons.join(", ") : "Rejected";
       actions = `<p class="muted">Rejected. Kitchen cannot change this now.</p>

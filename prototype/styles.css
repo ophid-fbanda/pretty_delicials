@@ -117,7 +117,8 @@ body {
 .phone.is-app .pay-btn,
 .phone.is-app .history-item,
 .phone.is-app .field input,
-.phone.is-app .field select {
+.phone.is-app .field select,
+.phone.is-app .field textarea {
   background: #fffaf3;
   color: #3a2418;
   border-color: #efdcc4;
@@ -1202,6 +1203,11 @@ button.who-card p {
 
 .pop-card .reject-btn {
   margin-top: 0.35rem;
+}
+
+.ready-go {
+  width: 100%;
+  margin-top: 1.15rem;
 }
 
 .phone.is-app .field textarea {
