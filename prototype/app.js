@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (order.cancelled) return;
       const idx = currentStep(order);
       if (idx < 0 || idx >= TRACK_STEPS.length - 1) return;
-      if (now - order.steps[idx].at < 2200) return;
+      if (now - order.steps[idx].at < 4000) return;
       order.steps[idx + 1].at = now;
     });
     if (view === "track" || view === "history") render();
@@ -334,8 +334,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const done = step.at
           ? `<div class="stamp">${stamp(step.at)}</div>`
           : `<div class="stamp">waiting</div>`;
+        const pic = i === idx && !order.cancelled
+          ? `<img src="img/face.jpg" alt="" />`
+          : "";
         return `<li class="tl${state}">
-          <div class="tl-rail"><span class="tl-node"></span></div>
+          <div class="tl-rail"><span class="tl-node">${pic}</span></div>
           <div class="tl-body"><strong>${step.name}</strong>${done}</div>
         </li>`;
       })

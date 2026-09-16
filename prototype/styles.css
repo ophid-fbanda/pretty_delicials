@@ -128,21 +128,25 @@ body {
 }
 
 .phone.is-app .tl-rail::before {
-  background: #e0c8a4;
+  background: #d9c4a8;
 }
 
 .phone.is-app .tl.is-done .tl-rail::before {
-  background: #c45c1a;
+  background: #2f7d4a;
 }
 
 .phone.is-app .tl-node {
-  background: #fffaf3;
-  border-color: #d4a574;
+  background: transparent;
+  border-color: #c4b4a0;
 }
 
-.phone.is-app .tl.is-done .tl-node,
+.phone.is-app .tl.is-done .tl-node {
+  background: transparent;
+  border-color: #2f7d4a;
+}
+
 .phone.is-app .tl.is-now .tl-node {
-  background: #c45c1a;
+  background: #fffaf3;
   border-color: #c45c1a;
 }
 
@@ -599,8 +603,8 @@ body {
 
 .tl {
   display: grid;
-  grid-template-columns: 1.4rem 1fr;
-  column-gap: 0.75rem;
+  grid-template-columns: 2.1rem 1fr;
+  column-gap: 0.7rem;
 }
 
 .tl-rail {
@@ -612,45 +616,66 @@ body {
 .tl-rail::before {
   content: "";
   position: absolute;
-  top: 0.85rem;
-  bottom: -0.15rem;
+  top: 1.55rem;
+  bottom: 0.15rem;
   width: 2px;
-  background: #2c2c2c;
+  background: #d9c4a8;
 }
 
-.tl:last-child .tl-rail::before {
+.tl-rail::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #d9c4a8;
+}
+
+.tl:last-child .tl-rail::before,
+.tl:last-child .tl-rail::after {
   display: none;
 }
 
 .tl.is-done .tl-rail::before {
-  background: var(--gold);
+  background: #2f7d4a;
+}
+
+.tl.is-done .tl-rail::after {
+  border-top-color: #2f7d4a;
 }
 
 .tl-node {
   position: relative;
   z-index: 1;
-  width: 0.85rem;
-  height: 0.85rem;
-  margin-top: 0.2rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-top: 0.1rem;
   border-radius: 50%;
-  border: 2px solid #4a4a4a;
-  background: var(--ink);
+  border: 2.5px solid #c4b4a0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.tl-node img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .tl.is-done .tl-node {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: transparent;
+  border-color: #2f7d4a;
 }
 
 .tl.is-now .tl-node {
-  border-color: var(--gold);
-  background: var(--gold);
-  box-shadow: 0 0 0 4px rgba(224, 168, 74, 0.22);
-  animation: pulse 1.2s ease infinite;
+  border-color: #c45c1a;
+  box-shadow: 0 0 0 3px rgba(196, 92, 26, 0.18);
 }
 
 .tl-body {
-  padding: 0 0 1.05rem;
+  padding: 0.15rem 0 1.15rem;
 }
 
 .tl:last-child .tl-body {
