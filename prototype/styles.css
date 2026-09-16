@@ -1,0 +1,237 @@
+:root {
+  --ink: #070707;
+  --panel: #121212;
+  --line: rgba(255, 248, 240, 0.12);
+  --paper: #fff8f0;
+  --muted: #c9bba8;
+  --gold: #e0a84a;
+  --gold-deep: #c4892e;
+  --ember: #c45c1a;
+  --danger: #ff8a70;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #050505;
+  color: var(--paper);
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+}
+
+.phone {
+  position: relative;
+  width: min(100%, 430px);
+  min-height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(224, 168, 74, 0.18), transparent 55%),
+    var(--ink);
+  padding: 2.4rem 1.4rem 2rem;
+}
+
+.glow {
+  pointer-events: none;
+  position: absolute;
+  inset: auto 10% 8% 10%;
+  height: 180px;
+  background: radial-gradient(circle, rgba(196, 92, 26, 0.2), transparent 70%);
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - 4.4rem);
+}
+
+.brand {
+  display: grid;
+  place-items: center;
+  padding: 0.4rem 0 1.6rem;
+}
+
+.face-ring {
+  width: 168px;
+  height: 168px;
+  padding: 5px;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, var(--gold), #fff3d4, var(--ember), var(--gold));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.face-ring.small {
+  width: 92px;
+  height: 92px;
+  padding: 4px;
+  margin: 2.5rem auto 1.2rem;
+}
+
+.face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #000;
+}
+
+.mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.mode-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  padding: 0.78rem 0.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mode-btn.is-on {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  margin-top: 1.5rem;
+}
+
+.hint {
+  margin: 0 0 0.2rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field em {
+  font-style: normal;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.75;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--paper);
+  font: inherit;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 1rem;
+  padding: 0.95rem 1rem;
+  outline: none;
+}
+
+.field input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(224, 168, 74, 0.18);
+}
+
+.field input::placeholder {
+  color: #7d7266;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.92rem;
+}
+
+.submit,
+.ghost {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.submit {
+  margin-top: 0.55rem;
+  background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+  color: #1a1106;
+  border-radius: 1.15rem;
+  padding: 1.05rem 1rem;
+  font-size: 1.05rem;
+}
+
+.submit:active {
+  transform: translateY(1px);
+}
+
+.result {
+  text-align: center;
+  justify-content: flex-start;
+}
+
+.result h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 650;
+}
+
+.result-copy {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0.7rem 1rem 1.8rem;
+}
+
+.ghost {
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 1.15rem;
+  padding: 0.95rem 1rem;
+}
+
+@media (min-width: 500px) {
+  .phone {
+    min-height: 820px;
+    height: 820px;
+    border-radius: 36px;
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .screen {
+    min-height: 740px;
+  }
+}

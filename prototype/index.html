@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Pretty's Delici-als</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="phone">
+      <div class="glow" aria-hidden="true"></div>
+
+      <section class="screen" id="auth-screen">
+        <header class="brand">
+          <div class="face-ring">
+            <img
+              class="face"
+              src="img/face.jpg"
+              alt="Pretty's Delici-als"
+              width="889"
+              height="883"
+            />
+          </div>
+        </header>
+
+        <div class="mode" role="tablist" aria-label="Account">
+          <button type="button" class="mode-btn is-on" data-mode="login" role="tab" aria-selected="true">
+            Login
+          </button>
+          <button type="button" class="mode-btn" data-mode="create" role="tab" aria-selected="false">
+            Create account
+          </button>
+        </div>
+
+        <form id="auth-form" class="form" novalidate>
+          <p class="hint" id="form-hint">Enter the phone on your account.</p>
+
+          <label class="field">
+            <span>Phone number</span>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              required
+              placeholder="e.g. 082 000 0000"
+            />
+          </label>
+
+          <label class="field extra" hidden>
+            <span>Preferred name</span>
+            <input
+              id="name"
+              name="preferredName"
+              type="text"
+              autocomplete="name"
+              placeholder="What should we call you?"
+            />
+          </label>
+
+          <label class="field extra" hidden>
+            <span>Email <em>(optional)</em></span>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@email.com"
+            />
+          </label>
+
+          <p class="error" id="form-error" hidden></p>
+
+          <button class="submit" type="submit" id="submit-btn">Login</button>
+        </form>
+      </section>
+
+      <section class="screen result" id="result-screen" hidden>
+        <div class="face-ring small">
+          <img class="face" src="img/face.jpg" alt="" width="889" height="883" />
+        </div>
+        <h1 id="result-title">You're in</h1>
+        <p class="result-copy" id="result-copy"></p>
+        <button type="button" class="ghost" id="back-btn">Back to the form</button>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
