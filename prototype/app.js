@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
           <div class="prow-money">
             <div class="prow-price">${money(item.price)}</div>
-            <div class="prow-total">${qty ? money(lineTotal) : ""}</div>
+            <div class="prow-total">${qty ? "Total " + money(lineTotal) : "Total"}</div>
           </div>
           <div class="qty qty-vert">
             <button type="button" class="qty-btn plus" data-qty="${item.id}" data-dir="1">+</button>
