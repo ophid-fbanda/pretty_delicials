@@ -134,13 +134,24 @@ document.addEventListener("DOMContentLoaded", () => {
     drawerBackdrop.hidden = false;
   }
 
+  function isAdminView() {
+    return view === "admin" || view === "staff" || view === "clients";
+  }
+
   function renderRoles() {
-    const roles = user.roles || [];
-    burgerBtn.hidden = roles.length === 0;
-    roleList.innerHTML = roles
-      .map((role) => {
-        const on = role === "Admin" && (view === "admin" || view === "staff" || view === "clients");
-        return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-role="${role}">${role}</button>`;
+    const team = user.roles || [];
+    burgerBtn.hidden = team.length === 0;
+    const items = [];
+    if (team.length) items.push({ label: "Shopping", view: "home" });
+    if (team.includes("Admin")) items.push({ label: "Administration", view: "admin" });
+    team
+      .filter((role) => role !== "Admin")
+      .forEach((role) => items.push({ label: role, view: role.toLowerCase() }));
+    roleList.innerHTML = items
+      .map((item) => {
+        const on =
+          (item.view === "home" && !isAdminView()) || (item.view === "admin" && isAdminView());
+        return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-view="${item.view}">${item.label}</button>`;
       })
       .join("");
   }
@@ -641,10 +652,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   roleList.addEventListener("click", (event) => {
-    const btn = event.target.closest("[data-role]");
+    const btn = event.target.closest("[data-view]");
     if (!btn) return;
     closeOverlays();
-    view = btn.dataset.role === "Admin" ? "admin" : "home";
+    view = btn.dataset.view === "admin" ? "admin" : "home";
     render();
   });
 
