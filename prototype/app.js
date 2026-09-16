@@ -182,15 +182,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderAdmin() {
-    stage.innerHTML = `<h2 class="page-h">Admin</h2>
+    const staffN = people.filter((p) => p.roles.length).length;
+    const clientN = people.filter((p) => !p.roles.length).length;
+    stage.innerHTML = `<h2 class="page-h">Administration</h2>
+      <p class="muted">Accounts only.</p>
       <div class="choice">
         <button type="button" class="choice-card" data-admin="staff">
           <strong>Staff</strong>
-          <span>People with bakery roles</span>
+          <span>${staffN} with roles</span>
         </button>
         <button type="button" class="choice-card" data-admin="clients">
           <strong>Clients</strong>
-          <span>Accounts with no role</span>
+          <span>${clientN} with no role</span>
         </button>
       </div>`;
   }
