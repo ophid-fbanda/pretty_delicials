@@ -281,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = people.filter((p) => p.roles.length && matchesPerson(p, staffQuery));
     const cards = list
       .map((person) => {
-        return `<article class="who-card tall">
+        return `<article class="who-card">
           <h2>${person.name}</h2>
           <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
           <div class="ticks">${ticksHtml(person)}</div>
@@ -302,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = people.filter((p) => !p.roles.length && matchesPerson(p, clientQuery));
     const cards = list
       .map((person) => {
-        return `<article class="who-card tall">
+        return `<article class="who-card">
           <h2>${person.name}</h2>
           <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
           <p class="muted">${person.disabled ? "Disabled" : "Active"}</p>
@@ -328,7 +328,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dutyN = people.filter((p) => p.roles.length && p.onDuty).length;
     const stuckN = kitchenOrders.filter((o) => o.mins > 30 && o.status !== "delivered" && o.status !== "cancelled" && o.status !== "rejected").length;
     stage.innerHTML = `<h2 class="page-h">Management</h2>
-      <div class="choice">
+      <div class="choice share">
         ${choiceCard("mgmt-branches", "Branches", openN + " open of " + branches.length)}
         ${choiceCard("mgmt-products", "Products", itemN + " items")}
         ${choiceCard("mgmt-vehicles", "Vehicles", outN + " out")}
@@ -342,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderBranches() {
     const cards = branches
       .map((shop) => {
-        return `<article class="who-card">
+        return `<article class="who-card fit">
           <div class="who-top">
             <h2>${shop.name}</h2>
             <span class="flag ${shop.open ? "open" : "shut"}">${shop.open ? "Open" : "Closed"}</span>
@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderProductsHub() {
     stage.innerHTML = `${backBtn("mgmt", "Back")}
       <h2 class="page-h">Products</h2>
-      <div class="choice">
+      <div class="choice share">
         ${choiceCard("mgmt-categories", "Categories", catalog.categories.length + "")}
         ${choiceCard("mgmt-sizes", "Sizes", catalog.sizes.length + "")}
         ${choiceCard("mgmt-flavours", "Flavours", catalog.flavours.length + "")}
@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderItems() {
     const cards = catalog.items
       .map((item) => {
-        return `<article class="who-card">
+        return `<article class="who-card fit">
           <div class="who-top">
             <h2>${item.flavour} ${item.category.toLowerCase()}</h2>
             <span class="flag ${item.available ? "open" : "shut"}">${item.available ? "Available" : "Off"}</span>
@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cards = list
       .map((person) => {
         const next = person.cleared ? "Keeps roles tomorrow" : "Not cleared — no roles tomorrow";
-        return `<article class="who-card">
+        return `<article class="who-card fit">
           <div class="who-top">
             <h2>${person.name}</h2>
             <span class="flag ${person.onDuty ? "open" : "shut"}">${person.onDuty ? "On duty" : "Off"}</span>
@@ -482,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderFinanceHub() {
     stage.innerHTML = `${backBtn("mgmt", "Back")}
       <h2 class="page-h">Finance</h2>
-      <div class="choice">
+      <div class="choice share">
         ${choiceCard("mgmt-expenses", "Expenses", expenses.length + "")}
         ${choiceCard("mgmt-adjustments", "Adjustments", adjustments.length + "")}
         ${choiceCard("mgmt-reports", "Reports", "today")}
