@@ -813,10 +813,108 @@ body {
   color: var(--danger);
 }
 
-@keyframes pulse {
-  50% {
-    box-shadow: 0 0 0 7px rgba(224, 168, 74, 0.05);
-  }
+.choice {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.choice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  background: #fffaf3;
+  color: #3a2418;
+  border: 1px solid #efdcc4;
+  border-radius: 1.2rem;
+  padding: 1.2rem 1.1rem;
+  box-shadow: 0 8px 18px rgba(122, 50, 20, 0.08);
+}
+
+.choice-card span {
+  color: #9a5a2a;
+  font-size: 0.9rem;
+}
+
+.who-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.who-card {
+  min-height: 15.5rem;
+  display: flex;
+  flex-direction: column;
+  background: #fffaf3;
+  border: 1px solid #efdcc4;
+  border-radius: 1.15rem;
+  padding: 0.95rem;
+  box-shadow: 0 8px 18px rgba(122, 50, 20, 0.08);
+}
+
+.who-card h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+.who-card .submit {
+  margin-top: auto;
+}
+
+.ticks {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #3a2418;
+}
+
+.who-actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.ghost.back {
+  margin-bottom: 0.7rem;
+  padding: 0.55rem 0.9rem;
+  width: auto;
+}
+
+.pop {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 36, 24, 0.45);
+  z-index: 9;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+}
+
+.pop-card {
+  width: 100%;
+  background: #fffaf3;
+  color: #3a2418;
+  border-radius: 1.25rem 1.25rem 1.4rem 1.4rem;
+  padding: 1.1rem 1rem 1.2rem;
+  box-shadow: 0 -8px 30px rgba(58, 36, 24, 0.2);
+}
+
+.pop-card h2 {
+  margin: 0 0 0.3rem;
+}
+
+.pop-card .ghost {
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
 @media (min-width: 500px) {

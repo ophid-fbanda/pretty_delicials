@@ -22,6 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
   const DELIVERY_FARE = 3;
 
+  const TEAM_ROLES = ["Admin", "Management", "Kitchen", "Delivery"];
+  let people = [
+    { id: "seed-admin", name: "Admin", phone: "0771111111", email: "", roles: ["Admin"], disabled: false },
+    { id: "seed-k", name: "Tariro", phone: "0771110001", email: "", roles: ["Kitchen"], disabled: false },
+    { id: "seed-d", name: "Blessing", phone: "0771110002", email: "", roles: ["Delivery"], disabled: false },
+    { id: "seed-m", name: "Nyasha", phone: "0771110003", email: "", roles: ["Management"], disabled: false },
+    { id: "seed-c1", name: "Chipo", phone: "0772220001", email: "", roles: [], disabled: false },
+    { id: "seed-c2", name: "Farai", phone: "0772220002", email: "", roles: [], disabled: true },
+  ];
+  let roleDrafts = {};
+  let staffQuery = "";
+  let clientQuery = "";
   const phoneEl = document.getElementById("phone");
   const authScreen = document.getElementById("auth-screen");
   const appScreen = document.getElementById("app-screen");
@@ -36,6 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const secretInput = document.getElementById("secret");
   const stage = document.getElementById("stage");
   const cartDock = document.getElementById("cart-dock");
+  const pop = document.getElementById("pop");
+  const popCard = document.getElementById("pop-card");
+  const burgerBtn = document.getElementById("burger-btn");
   const drawer = document.getElementById("drawer");
   const drawerBackdrop = document.getElementById("drawer-backdrop");
   const userMenu = document.getElementById("user-menu");
@@ -120,13 +135,113 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderRoles() {
-    const roles = user.roles;
+    const roles = user.roles || [];
+    burgerBtn.hidden = roles.length === 0;
     roleList.innerHTML = roles
-      .map(
-        (role) =>
-            `<button type="button" class="role-btn${role === "Client" && (view === "home" || view === "client") ? " is-on" : ""}" data-role="${role}">${role}</button>`
-      )
+      .map((role) => {
+        const on = role === "Admin" && (view === "admin" || view === "staff" || view === "clients");
+        return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-role="${role}">${role}</button>`;
+      })
       .join("");
+  }
+
+  function draftsFor(person) {
+    if (!roleDrafts[person.id]) roleDrafts[person.id] = person.roles.slice();
+    return roleDrafts[person.id];
+  }
+
+  function ticksHtml(person) {
+    const selected = draftsFor(person);
+    return TEAM_ROLES.map(
+      (role) =>
+        `<label class="tick"><input type="checkbox" data-role-tick="${person.id}" value="${role}"${
+          selected.includes(role) ? " checked" : ""
+        } /> ${role}</label>`
+    ).join("");
+  }
+
+  function matchesPerson(person, query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return [person.name, person.phone, person.email].join(" ").toLowerCase().includes(q);
+  }
+
+  function syncUserRoles(person) {
+    if (user && user.phone === person.phone) user.roles = person.roles.slice();
+  }
+
+  function renderAdmin() {
+    stage.innerHTML = `<h2 class="page-h">Admin</h2>
+      <div class="choice">
+        <button type="button" class="choice-card" data-admin="staff">
+          <strong>Staff</strong>
+          <span>People with bakery roles</span>
+        </button>
+        <button type="button" class="choice-card" data-admin="clients">
+          <strong>Clients</strong>
+          <span>Accounts with no role</span>
+        </button>
+      </div>`;
+  }
+
+  function renderStaff() {
+    const list = people.filter((p) => p.roles.length && matchesPerson(p, staffQuery));
+    const cards = list
+      .map((person) => {
+        return `<article class="who-card">
+          <h2>${person.name}</h2>
+          <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
+          <div class="ticks">${ticksHtml(person)}</div>
+          <button type="button" class="submit save-roles" data-save-roles="${person.id}">Save</button>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `<button type="button" class="ghost back" data-admin="admin">Back</button>
+      <h2 class="page-h">Staff</h2>
+      <label class="field"><span>Search</span><input id="staff-search" value="${staffQuery}" placeholder="Name or phone" /></label>
+      <div class="who-grid">${cards || `<p class="muted">No staff match.</p>`}</div>`;
+  }
+
+  function renderClients() {
+    const list = people.filter((p) => !p.roles.length && matchesPerson(p, clientQuery));
+    const cards = list
+      .map((person) => {
+        return `<article class="who-card">
+          <h2>${person.name}</h2>
+          <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
+          <p class="muted">${person.disabled ? "Disabled" : "Active"}</p>
+          <div class="who-actions">
+            <button type="button" class="ghost" data-disable="${person.id}">${
+              person.disabled ? "Enable" : "Disable"
+            }</button>
+            <button type="button" class="submit" data-recruit="${person.id}">Recruit</button>
+          </div>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `<button type="button" class="ghost back" data-admin="admin">Back</button>
+      <h2 class="page-h">Clients</h2>
+      <label class="field"><span>Search</span><input id="client-search" value="${clientQuery}" placeholder="Name or phone" /></label>
+      <div class="who-grid">${cards || `<p class="muted">No clients match.</p>`}</div>`;
+  }
+
+  function openRecruit(id) {
+    const person = people.find((p) => p.id === id);
+    if (!person) return;
+    roleDrafts[person.id] = [];
+    popCard.innerHTML = `<h2>Recruit ${person.name}</h2>
+      <p class="muted">${person.phone}</p>
+      <p class="muted">Tick roles and confirm. They become staff.</p>
+      <div class="ticks">${ticksHtml(person)}</div>
+      <p class="error" id="recruit-error" hidden></p>
+      <button type="button" class="submit" id="confirm-recruit" data-id="${person.id}">Confirm</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function closePop() {
+    pop.hidden = true;
+    popCard.innerHTML = "";
   }
 
   function renderCartDock() {
@@ -402,17 +517,21 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (view === "history") renderHistory();
     else if (view === "account") renderAccount();
     else if (view === "help") renderHelp();
+    else if (view === "admin") renderAdmin();
+    else if (view === "staff") renderStaff();
+    else if (view === "clients") renderClients();
     renderCartDock();
   }
 
   function enterApp(nextUser) {
     user = nextUser;
-    view = "home";
+    view = nextUser.roles.includes("Admin") ? "admin" : "home";
     category = "All";
     authScreen.hidden = true;
     appScreen.hidden = false;
     phoneShell.classList.add("is-app");
     closeOverlays();
+    closePop();
     render();
   }
 
@@ -447,11 +566,44 @@ document.addEventListener("DOMContentLoaded", () => {
       errorEl.hidden = false;
       return;
     }
+    let person = people.find((p) => p.phone === phone);
+    if (mode === "create") {
+      if (!person) {
+        person = {
+          id: "p-" + Date.now(),
+          name: preferredName,
+          phone,
+          email,
+          roles: [],
+          disabled: false,
+        };
+        people.push(person);
+      }
+      enterApp({
+        phone,
+        name: preferredName,
+        email,
+        roles: [],
+        trackId: null,
+      });
+      return;
+    }
+    if (!person) {
+      person = {
+        id: "p-" + Date.now(),
+        name: preferredName || "Admin",
+        phone,
+        email,
+        roles: ["Admin"],
+        disabled: false,
+      };
+      people.push(person);
+    }
     enterApp({
       phone,
-      name: preferredName || "Client",
-      email,
-      roles: ["Client"],
+      name: person.name,
+      email: person.email || email,
+      roles: person.roles.slice(),
       trackId: null,
     });
   });
@@ -479,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       view = "home";
       appScreen.hidden = true;
       authScreen.hidden = false;
+      closePop();
       phoneShell.classList.remove("is-app");
       secretInput.value = "";
       return;
@@ -491,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = event.target.closest("[data-role]");
     if (!btn) return;
     closeOverlays();
-    view = "home";
+    view = btn.dataset.role === "Admin" ? "admin" : "home";
     render();
   });
 
@@ -576,6 +729,35 @@ document.addEventListener("DOMContentLoaded", () => {
       locations.push(item);
       if (!selectedLocationId) selectedLocationId = item.id;
       render();
+      return;
+    }
+    const adminGo = event.target.closest("[data-admin]");
+    if (adminGo) {
+      view = adminGo.dataset.admin;
+      render();
+      return;
+    }
+    const saveRoles = event.target.closest("[data-save-roles]");
+    if (saveRoles) {
+      const person = people.find((p) => p.id === saveRoles.dataset.saveRoles);
+      if (person) {
+        person.roles = (roleDrafts[person.id] || person.roles).slice();
+        syncUserRoles(person);
+        if (!user.roles.length) view = "home";
+      }
+      render();
+      return;
+    }
+    const disable = event.target.closest("[data-disable]");
+    if (disable) {
+      const person = people.find((p) => p.id === disable.dataset.disable);
+      if (person) person.disabled = !person.disabled;
+      render();
+      return;
+    }
+    const recruit = event.target.closest("[data-recruit]");
+    if (recruit) {
+      openRecruit(recruit.dataset.recruit);
     }
   });
 
@@ -583,6 +765,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target.id === "location-select") {
       selectedLocationId = event.target.value || null;
       render();
+    }
+    const tick = event.target.closest("[data-role-tick]");
+    if (tick) {
+      const id = tick.dataset.roleTick;
+      const role = tick.value;
+      const current = roleDrafts[id] || [];
+      roleDrafts[id] = tick.checked
+        ? TEAM_ROLES.filter((item) => current.includes(item) || item === role)
+        : current.filter((item) => item !== role);
     }
   });
 
@@ -592,12 +783,65 @@ document.addEventListener("DOMContentLoaded", () => {
       updateChangeHint();
     }
     if (event.target.id === "eco-number") payment.ecoNumber = event.target.value;
+    if (event.target.id === "staff-search") {
+      staffQuery = event.target.value;
+      render();
+      const field = document.getElementById("staff-search");
+      if (field) {
+        field.focus();
+        field.setSelectionRange(staffQuery.length, staffQuery.length);
+      }
+    }
+    if (event.target.id === "client-search") {
+      clientQuery = event.target.value;
+      render();
+      const field = document.getElementById("client-search");
+      if (field) {
+        field.focus();
+        field.setSelectionRange(clientQuery.length, clientQuery.length);
+      }
+    }
   });
 
   document.getElementById("cart-dock").addEventListener("click", () => {
     closeOverlays();
     view = "cart";
     render();
+  });
+
+  pop.addEventListener("click", (event) => {
+    if (event.target === pop || event.target.id === "close-pop") {
+      closePop();
+      return;
+    }
+    if (event.target.id === "confirm-recruit") {
+      const id = event.target.dataset.id;
+      const person = people.find((p) => p.id === id);
+      const roles = roleDrafts[id] || [];
+      const err = document.getElementById("recruit-error");
+      if (!roles.length) {
+        err.textContent = "Tick at least one role.";
+        err.hidden = false;
+        return;
+      }
+      person.roles = roles.slice();
+      person.disabled = false;
+      syncUserRoles(person);
+      closePop();
+      view = "staff";
+      render();
+    }
+  });
+
+  pop.addEventListener("change", (event) => {
+    const tick = event.target.closest("[data-role-tick]");
+    if (!tick) return;
+    const id = tick.dataset.roleTick;
+    const role = tick.value;
+    const current = roleDrafts[id] || [];
+    roleDrafts[id] = tick.checked
+      ? TEAM_ROLES.filter((item) => current.includes(item) || item === role)
+      : current.filter((item) => item !== role);
   });
 
   setMode("login");
