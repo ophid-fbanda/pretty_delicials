@@ -80,6 +80,20 @@ document.addEventListener("DOMContentLoaded", () => {
   let kitchenTab = "incoming";
   let kitchenOpenId = null;
   let rejectDraft = { reasons: [], notes: "" };
+  let runOrders = [
+    { id: "PD-1048", status: "ready", address: "27 St Patrick, Avondale", lat: -17.787, lng: 31.038, lines: [{ name: "Chicken pie", qty: 3 }] },
+    { id: "PD-1047", status: "ready", address: "8 Crowhill, Borrowdale", lat: -17.776, lng: 31.083, lines: [{ name: "Sausage roll", qty: 6 }, { name: "Mini rolls", qty: 1 }] },
+    { id: "PD-1046", status: "ready", address: "44 Julius Nyerere, CBD", lat: -17.831, lng: 31.052, lines: [{ name: "Beef samosa", qty: 10 }] },
+    { id: "PD-1045", status: "loaded", address: "3 East Road, Belgravia", lat: -17.805, lng: 31.045, lines: [{ name: "Chicken wrap", qty: 2 }] },
+    { id: "PD-1036", status: "in transit", address: "19 Churchill, Gunhill", lat: -17.79, lng: 31.06, lines: [{ name: "Beef samosa", qty: 10 }] },
+    { id: "PD-1035", status: "delivered", address: "Home · Chisipite", lat: -17.788, lng: 31.09, lines: [{ name: "Salad wrap", qty: 1 }] },
+    { id: "PD-1031", status: "failed", address: "Gate 2, Highlands", lat: -17.8, lng: 31.07, lines: [{ name: "Steak pie", qty: 2 }] },
+  ];
+  const BASE = { name: "Avondale", address: "12 King George, Avondale", lat: -17.784, lng: 31.035 };
+  let runTab = "collect";
+  let runPicked = {};
+  let runFocusId = null;
+  let runMapMode = "all";
   let selectedVehicleId = null;
   const MGMT_VIEWS = new Set([
     "mgmt",
@@ -116,6 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const secretInput = document.getElementById("secret");
   const stage = document.getElementById("stage");
   const cartDock = document.getElementById("cart-dock");
+  const runNav = document.getElementById("run-nav");
+  const runDock = document.getElementById("run-dock");
   const pop = document.getElementById("pop");
   const popCard = document.getElementById("pop-card");
   const burgerBtn = document.getElementById("burger-btn");
@@ -214,6 +230,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return view === "kitchen";
   }
 
+  function isDeliveryView() {
+    return view === "delivery";
+  }
+
   function personName(id) {
     const person = people.find((p) => p.id === id);
     return person ? person.name : "—";
@@ -232,10 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
     roleList.innerHTML = items
       .map((item) => {
         const on =
-          (item.view === "home" && !isAdminView() && !isMgmtView() && !isKitchenView()) ||
+          (item.view === "home" && !isAdminView() && !isMgmtView() && !isKitchenView() && !isDeliveryView()) ||
           (item.view === "admin" && isAdminView()) ||
           (item.view === "mgmt" && isMgmtView()) ||
-          (item.view === "kitchen" && isKitchenView());
+          (item.view === "kitchen" && isKitchenView()) ||
+          (item.view === "delivery" && isDeliveryView());
         return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-view="${item.view}">${item.label}</button>`;
       })
       .join("");
@@ -770,6 +791,179 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("cart-dock-total").textContent = money(cartSubtotal());
   }
 
+  function runBits(order) {
+    return order.lines.map((line) => `<span class="bit">${line.qty} ${line.name}</span>`).join("");
+  }
+
+  function pinStyle(lat, lng) {
+    const x = Math.max(12, Math.min(88, ((lng - 31.02) / 0.08) * 100));
+    const y = Math.max(16, Math.min(84, ((lat + 17.86) / 0.1) * 100));
+    return `left:${x}%;top:${y}%`;
+  }
+
+  function pinClass(status) {
+    if (status === "loaded") return "loaded";
+    if (status === "in transit") return "transit";
+    if (status === "delivered") return "delivered";
+    if (status === "failed") return "failed";
+    return "ready";
+  }
+
+  function flagFor(status) {
+    if (status === "delivered" || status === "ready") return "open";
+    if (status === "failed") return "shut";
+    if (status === "in transit") return "out";
+    return "stuck";
+  }
+
+  function renderRunChrome() {
+    const on = isDeliveryView();
+    runNav.hidden = !on;
+    phoneShell.classList.toggle("has-run", on);
+    if (!on) {
+      runDock.hidden = true;
+      phoneShell.classList.remove("has-run-dock");
+      return;
+    }
+    const tabs = [
+      ["collect", "Collect"],
+      ["loaded", "Loaded"],
+      ["map", "Map"],
+      ["today", "Today"],
+    ];
+    runNav.innerHTML = tabs
+      .map(
+        ([id, label]) =>
+          `<button type="button" class="${runTab === id ? "is-on" : ""}" data-run-tab="${id}">${label}</button>`
+      )
+      .join("");
+    const pickedN = Object.values(runPicked).filter(Boolean).length;
+    const loadedN = runOrders.filter((o) => o.status === "loaded").length;
+    if (runTab === "collect" && pickedN) {
+      runDock.hidden = false;
+      runDock.className = "run-dock";
+      runDock.dataset.runAct = "load";
+      runDock.innerHTML = `<span>${pickedN}</span><span>Load</span>`;
+    } else if (runTab === "loaded" && loadedN) {
+      runDock.hidden = false;
+      runDock.className = "run-dock night";
+      runDock.dataset.runAct = "transit";
+      runDock.innerHTML = `<span>Transit</span>`;
+    } else {
+      runDock.hidden = true;
+      delete runDock.dataset.runAct;
+    }
+    phoneShell.classList.toggle("has-run-dock", !runDock.hidden);
+  }
+
+  function renderDelivery() {
+    if (runTab === "collect") renderRunCollect();
+    else if (runTab === "loaded") renderRunLoaded();
+    else if (runTab === "map") renderRunMap();
+    else renderRunToday();
+  }
+
+  function renderRunCollect() {
+    const list = runOrders.filter((o) => o.status === "ready");
+    const slips = list
+      .map((o) => {
+        const on = !!runPicked[o.id];
+        return `<label class="slip${on ? " is-on" : ""}">
+          <input type="checkbox" data-run-tick="${o.id}"${on ? " checked" : ""} />
+          <span class="slip-mark"></span>
+          <div>
+            <strong>${o.id}</strong>
+            <p class="muted">${o.address}</p>
+            <div class="bits">${runBits(o)}</div>
+          </div>
+        </label>`;
+      })
+      .join("");
+    stage.innerHTML = `<p class="run-kicker">Ready for collection</p>
+      <h2 class="page-h">What goes on the van</h2>
+      <div class="slip-list">${slips || `<p class="muted">Nothing waiting.</p>`}</div>`;
+  }
+
+  function renderRunLoaded() {
+    const list = runOrders.filter((o) => o.status === "loaded");
+    const slips = list
+      .map(
+        (o) => `<article class="slip loaded-slip">
+          <div>
+            <strong>${o.id}</strong>
+            <p class="muted">${o.address}</p>
+            <div class="bits">${runBits(o)}</div>
+          </div>
+          <button type="button" class="ghost" data-run-remove="${o.id}">Remove</button>
+        </article>`
+      )
+      .join("");
+    stage.innerHTML = `<p class="run-kicker">On the van</p>
+      <h2 class="page-h">Loaded</h2>
+      <div class="slip-list">${slips || `<p class="muted">Van is empty. Tick ready orders and Load.</p>`}</div>`;
+  }
+
+  function renderRunMap() {
+    const focus = runOrders.find((o) => o.id === runFocusId);
+    const baseOn = runMapMode === "base";
+    const pins = runOrders
+      .map((o) => {
+        const on = runFocusId === o.id && !baseOn;
+        return `<button type="button" class="pin ${pinClass(o.status)}${on ? " is-on" : ""}" style="${pinStyle(o.lat, o.lng)}" ${
+          o.status === "in transit" ? `data-run-open="${o.id}"` : `data-run-pin="${o.id}"`
+        }><span>${o.id.slice(-2)}</span></button>`;
+      })
+      .join("");
+    const card = baseOn
+      ? `<div class="map-note"><strong>Return to base</strong><p class="muted">${BASE.address}</p></div>`
+      : focus
+        ? `<div class="map-note"><strong>${focus.id}</strong><p class="muted">${focus.address}</p><span class="flag ${flagFor(focus.status)}">${focus.status}</span></div>`
+        : `<div class="map-note"><p class="muted">Every stop on the run. Tap a pin. Base is home.</p></div>`;
+    stage.innerHTML = `<p class="run-kicker">Run map</p>
+      <div class="run-map-field">${pins}<button type="button" class="pin base${baseOn ? " is-on" : ""}" style="${pinStyle(BASE.lat, BASE.lng)}" data-run-base><span>B</span></button><button type="button" class="base-chip" data-run-base>Base</button></div>
+      ${card}`;
+  }
+
+  function renderRunToday() {
+    const stops = runOrders
+      .map((o, i) => {
+        const open = o.status === "in transit" ? `data-run-open="${o.id}"` : `data-run-pin="${o.id}"`;
+        return `<button type="button" class="stop" ${open}>
+          <span class="stop-n">${i + 1}</span>
+          <div><strong>${o.id}</strong><p class="muted">${o.address}</p></div>
+          <span class="flag ${flagFor(o.status)}">${o.status}</span>
+        </button>`;
+      })
+      .join("");
+    stage.innerHTML = `<p class="run-kicker">Today's loads</p>
+      <h2 class="page-h">By order</h2>
+      <div class="stop-list">${stops}</div>`;
+  }
+
+  function openRunChoice(id) {
+    const order = runOrders.find((o) => o.id === id);
+    if (!order || order.status !== "in transit") return;
+    popCard.innerHTML = `<h2>${order.id}</h2>
+      <p class="muted">${order.address}</p>
+      <button type="button" class="submit" id="run-show-map" data-id="${order.id}">Map</button>
+      <button type="button" class="accept" id="run-show-delivery" data-id="${order.id}">Delivery</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openRunDelivery(id) {
+    const order = runOrders.find((o) => o.id === id);
+    if (!order) return;
+    popCard.innerHTML = `<h2>Delivery ${order.id}</h2>
+      <p class="muted">${order.address}</p>
+      <div class="act-row">
+        <button type="button" class="accept" id="run-delivered" data-id="${order.id}">Delivered</button>
+        <button type="button" class="reject-btn" id="run-failed" data-id="${order.id}">Failed</button>
+      </div>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
   function stamp(date) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
@@ -1053,7 +1247,9 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (view === "mgmt-kitchen") renderKitchen();
     else if (view === "mgmt-more") renderMore();
     else if (view === "kitchen") renderKitchenRole();
+    else if (view === "delivery") renderDelivery();
     renderCartDock();
+    renderRunChrome();
   }
 
   function enterApp(nextUser) {
@@ -1061,9 +1257,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nextUser.roles.includes("Admin")) view = "admin";
     else if (nextUser.roles.includes("Management")) view = "mgmt";
     else if (nextUser.roles.includes("Kitchen")) view = "kitchen";
+    else if (nextUser.roles.includes("Delivery")) view = "delivery";
     else view = "home";
     kitchenTab = "incoming";
     kitchenOpenId = null;
+    runTab = "collect";
+    runPicked = {};
+    runFocusId = null;
+    runMapMode = "all";
     category = "All";
     authScreen.hidden = true;
     appScreen.hidden = false;
@@ -1174,7 +1375,9 @@ document.addEventListener("DOMContentLoaded", () => {
       appScreen.hidden = true;
       authScreen.hidden = false;
       closePop();
-      phoneShell.classList.remove("is-app");
+      phoneShell.classList.remove("is-app", "has-run", "has-run-dock");
+      runNav.hidden = true;
+      runDock.hidden = true;
       secretInput.value = "";
       return;
     }
@@ -1190,6 +1393,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (view === "kitchen") {
       kitchenTab = "incoming";
       kitchenOpenId = null;
+    }
+    if (view === "delivery") {
+      runTab = "collect";
+      runPicked = {};
+      runFocusId = null;
+      runMapMode = "all";
     }
     render();
   });
@@ -1431,13 +1640,44 @@ document.addEventListener("DOMContentLoaded", () => {
         kitchenTab = "bench";
       }
       render();
+      return;
     }
+    const runRemove = event.target.closest("[data-run-remove]");
+    if (runRemove) {
+      const order = runOrders.find((o) => o.id === runRemove.dataset.runRemove);
+      if (order && order.status === "loaded") order.status = "ready";
+      render();
+      return;
+    }
+    const runPin = event.target.closest("[data-run-pin]");
+    if (runPin) {
+      runFocusId = runPin.dataset.runPin;
+      runMapMode = "all";
+      runTab = "map";
+      render();
+      return;
+    }
+    if (event.target.closest("[data-run-base]")) {
+      runMapMode = "base";
+      runFocusId = null;
+      runTab = "map";
+      render();
+      return;
+    }
+    const runOpen = event.target.closest("[data-run-open]");
+    if (runOpen) openRunChoice(runOpen.dataset.runOpen);
   });
 
   stage.addEventListener("change", (event) => {
     if (event.target.id === "location-select") {
       selectedLocationId = event.target.value || null;
       render();
+    }
+    const runTick = event.target.closest("[data-run-tick]");
+    if (runTick) {
+      runPicked[runTick.dataset.runTick] = runTick.checked;
+      render();
+      return;
     }
     if (event.target.id === "veh-assignee") {
       const v = vehicles.find((item) => item.id === selectedVehicleId);
@@ -1490,6 +1730,39 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   });
 
+  runNav.addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-run-tab]");
+    if (!tab) return;
+    runTab = tab.dataset.runTab;
+    if (runTab !== "map") {
+      runMapMode = "all";
+    }
+    render();
+  });
+
+  runDock.addEventListener("click", () => {
+    if (runDock.dataset.runAct === "load") {
+      Object.keys(runPicked).forEach((id) => {
+        if (!runPicked[id]) return;
+        const order = runOrders.find((o) => o.id === id);
+        if (order && order.status === "ready") order.status = "loaded";
+      });
+      runPicked = {};
+      runTab = "loaded";
+      render();
+      return;
+    }
+    if (runDock.dataset.runAct === "transit") {
+      runOrders.forEach((o) => {
+        if (o.status === "loaded") o.status = "in transit";
+      });
+      runTab = "map";
+      runMapMode = "all";
+      runFocusId = null;
+      render();
+    }
+  });
+
   pop.addEventListener("click", (event) => {
     if (event.target === pop || event.target.id === "close-pop") {
       closePop();
@@ -1511,6 +1784,27 @@ document.addEventListener("DOMContentLoaded", () => {
       closePop();
       kitchenOpenId = null;
       kitchenTab = "incoming";
+      render();
+      return;
+    }
+    if (event.target.id === "run-show-map") {
+      runFocusId = event.target.dataset.id;
+      runMapMode = "all";
+      runTab = "map";
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "run-show-delivery") {
+      openRunDelivery(event.target.dataset.id);
+      return;
+    }
+    if (event.target.id === "run-delivered" || event.target.id === "run-failed") {
+      const order = runOrders.find((o) => o.id === event.target.dataset.id);
+      if (order && order.status === "in transit") {
+        order.status = event.target.id === "run-delivered" ? "delivered" : "failed";
+      }
+      closePop();
       render();
       return;
     }
