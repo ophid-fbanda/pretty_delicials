@@ -819,6 +819,10 @@ body {
 }
 
 .choice-card {
+  appearance: none;
+  font: inherit;
+  cursor: pointer;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
