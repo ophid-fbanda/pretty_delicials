@@ -175,24 +175,26 @@ document.addEventListener("DOMContentLoaded", () => {
       (name) =>
         `<button type="button" class="chip${category === name ? " is-on" : ""}" data-cat="${name}">${name}</button>`
     ).join("");
-    const cards = list
+    const rows = list
       .map((item) => {
         const qty = cart[item.id] || 0;
-        return `<article class="card" style="background-image:url('img/face.jpg')">
-          <div class="card-shade"></div>
-          <div class="card-price">${money(item.price)}</div>
-          <div class="card-body">
-            <h2>${item.name}</h2>
-            <div class="qty">
-              <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="-1">−</button>
-              <span class="qty-val">${qty}</span>
-              <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="1">+</button>
-            </div>
+        const lineTotal = item.price * qty;
+        return `<article class="prow">
+          <div class="prow-pic">
+            <img src="img/face.jpg" alt="" />
+            <span>${item.name}</span>
           </div>
+          <div class="prow-price">${money(item.price)}</div>
+          <div class="qty">
+            <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="-1">−</button>
+            <span class="qty-val">${qty}</span>
+            <button type="button" class="qty-btn" data-qty="${item.id}" data-dir="1">+</button>
+          </div>
+          <div class="prow-total">${qty ? money(lineTotal) : "—"}</div>
         </article>`;
       })
       .join("");
-    stage.innerHTML = `<div class="cats">${chips}</div><div class="products">${cards}</div>`;
+    stage.innerHTML = `<div class="cats">${chips}</div><div class="products">${rows}</div>`;
   }
 
   function renderCart() {
@@ -329,7 +331,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const done = step.at
           ? `<div class="stamp">${stamp(step.at)}</div>`
           : `<div class="stamp">waiting</div>`;
-        return `<div class="step${state}"><div class="dot"></div><div><strong>${step.name}</strong>${done}</div></div>`;
+        return `<li class="tl${state}">
+          <div class="tl-rail"><span class="tl-node"></span></div>
+          <div class="tl-body"><strong>${step.name}</strong>${done}</div>
+        </li>`;
       })
       .join("");
     const cancel =
@@ -338,8 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
         : "";
     stage.innerHTML = `<h2 class="page-h">Tracking</h2>
       <p class="tag${order.cancelled ? " cancelled" : ""}">${order.cancelled ? "Cancelled" : order.id}</p>
-      ${order.cancelled ? "" : `<p class="muted">${order.id}</p>`}
-      ${steps}
+      <ol class="timeline">${steps}</ol>
       ${cancel}`;
   }
 
