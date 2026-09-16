@@ -71,6 +71,7 @@ body {
   background: var(--bar-bg);
   border-bottom: 0;
   color: var(--bar-ink);
+  padding: 0 0.55rem;
 }
 
 .phone.is-app .app-title {
@@ -412,12 +413,10 @@ body {
   justify-self: start;
 }
 
-.icon-btn span {
-  display: block;
-  width: 1.15rem;
-  height: 2px;
-  background: var(--paper);
-  border-radius: 2px;
+.icon-btn[hidden] {
+  display: grid !important;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .avatar {
