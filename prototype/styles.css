@@ -33,7 +33,7 @@ body {
   position: relative;
   width: min(100%, 430px);
   min-height: 100dvh;
-  overflow: hidden;
+  overflow-y: auto;
   background:
     radial-gradient(120% 60% at 50% -10%, rgba(224, 168, 74, 0.18), transparent 55%),
     var(--ink);

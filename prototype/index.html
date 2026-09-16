@@ -33,7 +33,7 @@
         </div>
 
         <form id="auth-form" class="form" novalidate>
-          <p class="hint" id="form-hint">Enter the phone on your account.</p>
+          <p class="hint" id="form-hint">Phone number and your secret.</p>
 
           <label class="field">
             <span>Phone number</span>
@@ -67,6 +67,18 @@
               type="email"
               autocomplete="email"
               placeholder="you@email.com"
+            />
+          </label>
+
+          <label class="field">
+            <span>Secret</span>
+            <input
+              id="secret"
+              name="secret"
+              type="password"
+              autocomplete="current-password"
+              required
+              placeholder="Your secret"
             />
           </label>
 

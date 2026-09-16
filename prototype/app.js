@@ -7,6 +7,7 @@ const extras = document.querySelectorAll(".extra");
 const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
 const phoneInput = document.getElementById("phone");
+const secretInput = document.getElementById("secret");
 const authScreen = document.getElementById("auth-screen");
 const resultScreen = document.getElementById("result-screen");
 const resultTitle = document.getElementById("result-title");
@@ -28,9 +29,10 @@ function setMode(next) {
     field.hidden = !creating;
   });
   nameInput.required = creating;
+  secretInput.autocomplete = creating ? "new-password" : "current-password";
   hint.textContent = creating
-    ? "Phone and preferred name. Email is optional."
-    : "Enter the phone on your account.";
+    ? "Phone, preferred name, and a secret. Email is optional."
+    : "Phone number and your secret.";
   submitBtn.textContent = creating ? "Create account" : "Login";
   errorEl.hidden = true;
 }
@@ -51,6 +53,7 @@ form.addEventListener("submit", (event) => {
   const phone = phoneInput.value.trim();
   const preferredName = nameInput.value.trim();
   const email = emailInput.value.trim();
+  const secret = secretInput.value;
 
   if (!phone) {
     showError("Phone number is required.");
@@ -67,6 +70,12 @@ form.addEventListener("submit", (event) => {
   if (email && !email.includes("@")) {
     showError("Enter a real email, or leave it blank.");
     emailInput.focus();
+    return;
+  }
+
+  if (!secret) {
+    showError("Secret is required.");
+    secretInput.focus();
     return;
   }
 
@@ -88,4 +97,7 @@ form.addEventListener("submit", (event) => {
 document.getElementById("back-btn").addEventListener("click", () => {
   resultScreen.hidden = true;
   authScreen.hidden = false;
+});
+
+setMode("login");
 });
