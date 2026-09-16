@@ -7,19 +7,13 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="phone">
+    <main class="phone" id="phone">
       <div class="glow" aria-hidden="true"></div>
 
       <section class="screen" id="auth-screen">
         <header class="brand">
           <div class="face-ring">
-            <img
-              class="face"
-              src="img/face.jpg"
-              alt="Pretty's Delici-als"
-              width="889"
-              height="883"
-            />
+            <img class="face" src="img/face.jpg" alt="Pretty's Delici-als" width="889" height="883" />
           </div>
         </header>
 
@@ -37,64 +31,61 @@
 
           <label class="field">
             <span>Phone number</span>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputmode="tel"
-              autocomplete="tel"
-              required
-              placeholder="e.g. 082 000 0000"
-            />
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="e.g. 077 000 0000" />
           </label>
 
           <label class="field extra" hidden>
             <span>Preferred name</span>
-            <input
-              id="name"
-              name="preferredName"
-              type="text"
-              autocomplete="name"
-              placeholder="What should we call you?"
-            />
+            <input id="name" name="preferredName" type="text" autocomplete="name" placeholder="What should we call you?" />
           </label>
 
           <label class="field extra" hidden>
             <span>Email <em>(optional)</em></span>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              placeholder="you@email.com"
-            />
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="you@email.com" />
           </label>
 
           <label class="field">
             <span>Secret</span>
-            <input
-              id="secret"
-              name="secret"
-              type="password"
-              autocomplete="current-password"
-              required
-              placeholder="Your secret"
-            />
+            <input id="secret" name="secret" type="password" autocomplete="current-password" required placeholder="Your secret" />
           </label>
 
           <p class="error" id="form-error" hidden></p>
-
           <button class="submit" type="submit" id="submit-btn">Login</button>
         </form>
       </section>
 
-      <section class="screen result" id="result-screen" hidden>
-        <div class="face-ring small">
-          <img class="face" src="img/face.jpg" alt="" width="889" height="883" />
+      <section class="app" id="app-screen" hidden>
+        <header class="titlebar">
+          <button type="button" class="icon-btn" id="burger-btn" aria-label="Open roles">
+            <span></span><span></span><span></span>
+          </button>
+          <h1 class="app-title">Pretty's</h1>
+          <button type="button" class="avatar" id="user-btn" aria-label="Account menu">
+            <span id="avatar-letter">P</span>
+          </button>
+        </header>
+
+        <div class="user-menu" id="user-menu" hidden>
+          <button type="button" data-user-nav="home">Home</button>
+          <button type="button" data-user-nav="account">My Account</button>
+          <button type="button" data-user-nav="history">My History</button>
+          <button type="button" data-user-nav="help">Help</button>
+          <button type="button" data-user-nav="logout">Logout</button>
         </div>
-        <h1 id="result-title">You're in</h1>
-        <p class="result-copy" id="result-copy"></p>
-        <button type="button" class="ghost" id="back-btn">Back to the form</button>
+
+        <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+        <aside class="drawer" id="drawer" hidden>
+          <p class="drawer-label">Your roles</p>
+          <nav class="role-list" id="role-list"></nav>
+        </aside>
+
+        <div class="stage" id="stage"></div>
+
+        <button type="button" class="cart-dock" id="cart-dock" hidden>
+          <span id="cart-dock-count">0</span>
+          <span>Cart</span>
+          <strong id="cart-dock-total"></strong>
+        </button>
       </section>
     </main>
 
