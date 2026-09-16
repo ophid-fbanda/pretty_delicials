@@ -96,3 +96,14 @@ test("recruit writes roles onto staff; stripping roles returns a client", async 
   assert.equal((await store.listStaff()).some((row) => row.id === chipo.id), false);
   assert.ok((await store.listClients()).some((row) => row.id === chipo.id));
 });
+
+test("catalog items point at category ids, not names as keys", async () => {
+  const store = await openStore();
+  const catalog = await store.catalog();
+  const rolls = catalog.categories.find((row) => row.name === "Rolls");
+  assert.ok(rolls);
+  assert.equal(typeof rolls.id, "number");
+  const sausage = catalog.items.find((row) => row.id === "i1");
+  assert.equal(sausage?.categoryId, rolls.id);
+  assert.equal(sausage?.category, "Rolls");
+});

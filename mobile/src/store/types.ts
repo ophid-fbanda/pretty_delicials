@@ -61,8 +61,16 @@ export type Branch = {
   open: boolean;
 };
 
+export type CatalogTerm = {
+  id: number;
+  name: string;
+};
+
 export type CatalogItem = {
   id: string;
+  categoryId: number;
+  sizeId: number;
+  flavourId: number;
   category: string;
   size: string;
   flavour: string;
@@ -71,15 +79,16 @@ export type CatalogItem = {
 };
 
 export type Catalog = {
-  categories: string[];
-  sizes: string[];
-  flavours: string[];
+  categories: CatalogTerm[];
+  sizes: CatalogTerm[];
+  flavours: CatalogTerm[];
   items: CatalogItem[];
 };
 
 export type ShopProduct = {
   id: string;
   name: string;
+  categoryId: number;
   category: string;
   price: number;
 };

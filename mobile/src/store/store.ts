@@ -21,7 +21,6 @@ import {
   type Account,
   type Branch,
   type Catalog,
-  type CatalogItem,
   type ClientAccount,
   type Driver,
   type Fare,
@@ -145,17 +144,20 @@ export class Store {
     for (const name of CATEGORIES) await this.db.run("INSERT INTO categories (name) VALUES (?)", [name]);
     for (const name of SIZES) await this.db.run("INSERT INTO sizes (name) VALUES (?)", [name]);
     for (const name of FLAVOURS) await this.db.run("INSERT INTO flavours (name) VALUES (?)", [name]);
+    const categoryIds = await this.idsByName("categories");
+    const sizeIds = await this.idsByName("sizes");
+    const flavourIds = await this.idsByName("flavours");
     for (const item of CATALOG_ITEMS) {
       await this.db.run(
-        `INSERT INTO catalog_items (id, category, size, flavour, price, available) VALUES (?, ?, ?, ?, ?, ?)`,
-        [item.id, item.category, item.size, item.flavour, item.price, item.available]
+        `INSERT INTO catalog_items (id, category_id, size_id, flavour_id, price, available) VALUES (?, ?, ?, ?, ?, ?)`,
+        [item.id, categoryIds.get(item.category)!, sizeIds.get(item.size)!, flavourIds.get(item.flavour)!, item.price, item.available]
       );
     }
     for (const product of SHOP_PRODUCTS) {
-      await this.db.run(`INSERT INTO shop_products (id, name, category, price) VALUES (?, ?, ?, ?)`, [
+      await this.db.run(`INSERT INTO shop_products (id, name, category_id, price) VALUES (?, ?, ?, ?)`, [
         product.id,
         product.name,
-        product.category,
+        categoryIds.get(product.category)!,
         product.price,
       ]);
     }
@@ -428,23 +430,48 @@ export class Store {
     this.emit();
   }
 
+  private async idsByName(table: "categories" | "sizes" | "flavours") {
+    const rows = await this.db.all<{ id: number; name: string }>(`SELECT id, name FROM ${table}`);
+    return new Map(rows.map((row) => [row.name, row.id]));
+  }
+
   async catalog(): Promise<Catalog> {
-    const categories = (await this.db.all<{ name: string }>("SELECT name FROM categories")).map((row) => row.name);
-    const sizes = (await this.db.all<{ name: string }>("SELECT name FROM sizes")).map((row) => row.name);
-    const flavours = (await this.db.all<{ name: string }>("SELECT name FROM flavours")).map((row) => row.name);
+    const categories = await this.db.all<{ id: number; name: string }>("SELECT id, name FROM categories");
+    const sizes = await this.db.all<{ id: number; name: string }>("SELECT id, name FROM sizes");
+    const flavours = await this.db.all<{ id: number; name: string }>("SELECT id, name FROM flavours");
     const items = await this.db.all<{
       id: string;
+      category_id: number;
+      size_id: number;
+      flavour_id: number;
       category: string;
       size: string;
       flavour: string;
       price: number;
       available: number;
-    }>("SELECT * FROM catalog_items");
+    }>(
+      `SELECT i.id, i.category_id, i.size_id, i.flavour_id, i.price, i.available,
+              c.name AS category, s.name AS size, f.name AS flavour
+       FROM catalog_items i
+       JOIN categories c ON c.id = i.category_id
+       JOIN sizes s ON s.id = i.size_id
+       JOIN flavours f ON f.id = i.flavour_id`
+    );
     return {
       categories,
       sizes,
       flavours,
-      items: items.map((item) => ({ ...item, available: flag(item.available) })),
+      items: items.map((item) => ({
+        id: item.id,
+        categoryId: item.category_id,
+        sizeId: item.size_id,
+        flavourId: item.flavour_id,
+        category: item.category,
+        size: item.size,
+        flavour: item.flavour,
+        price: item.price,
+        available: flag(item.available),
+      })),
     };
   }
 
@@ -454,11 +481,11 @@ export class Store {
     this.emit();
   }
 
-  async addItem(item: Omit<CatalogItem, "id" | "available">) {
+  async addItem(item: { categoryId: number; sizeId: number; flavourId: number; price: number }) {
     const id = "i-" + Date.now();
     await this.db.run(
-      `INSERT INTO catalog_items (id, category, size, flavour, price, available) VALUES (?, ?, ?, ?, ?, 1)`,
-      [id, item.category, item.size, item.flavour, item.price]
+      `INSERT INTO catalog_items (id, category_id, size_id, flavour_id, price, available) VALUES (?, ?, ?, ?, ?, 1)`,
+      [id, item.categoryId, item.sizeId, item.flavourId, item.price]
     );
     this.emit();
   }
@@ -471,7 +498,24 @@ export class Store {
   }
 
   async shopProducts(): Promise<ShopProduct[]> {
-    return this.db.all<ShopProduct>("SELECT * FROM shop_products");
+    const rows = await this.db.all<{
+      id: string;
+      name: string;
+      category_id: number;
+      category: string;
+      price: number;
+    }>(
+      `SELECT p.id, p.name, p.price, p.category_id, c.name AS category
+       FROM shop_products p
+       JOIN categories c ON c.id = p.category_id`
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      categoryId: row.category_id,
+      category: row.category,
+      price: row.price,
+    }));
   }
 
   async listVehicles(): Promise<Vehicle[]> {

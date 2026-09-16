@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = "3";
+export const SCHEMA_VERSION = "4";
 
 export const RESET = `
 PRAGMA foreign_keys = OFF;
@@ -67,31 +67,34 @@ CREATE TABLE IF NOT EXISTS branches (
 );
 
 CREATE TABLE IF NOT EXISTS categories (
-  name TEXT PRIMARY KEY
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sizes (
-  name TEXT PRIMARY KEY
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS flavours (
-  name TEXT PRIMARY KEY
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS catalog_items (
   id TEXT PRIMARY KEY,
-  category TEXT NOT NULL REFERENCES categories(name),
-  size TEXT NOT NULL REFERENCES sizes(name),
-  flavour TEXT NOT NULL REFERENCES flavours(name),
+  category_id INTEGER NOT NULL REFERENCES categories(id),
+  size_id INTEGER NOT NULL REFERENCES sizes(id),
+  flavour_id INTEGER NOT NULL REFERENCES flavours(id),
   price REAL NOT NULL,
   available INTEGER NOT NULL DEFAULT 1 CHECK (available IN (0, 1)),
-  UNIQUE (category, size, flavour)
+  UNIQUE (category_id, size_id, flavour_id)
 );
 
 CREATE TABLE IF NOT EXISTS shop_products (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  category TEXT NOT NULL REFERENCES categories(name),
+  category_id INTEGER NOT NULL REFERENCES categories(id),
   price REAL NOT NULL
 );
 
