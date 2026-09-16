@@ -1,3 +1,4 @@
+document.addEventListener("DOMContentLoaded", () => {
 const form = document.getElementById("auth-form");
 const hint = document.getElementById("form-hint");
 const errorEl = document.getElementById("form-error");

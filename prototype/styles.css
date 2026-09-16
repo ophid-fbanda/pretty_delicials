@@ -129,6 +129,10 @@ body {
   line-height: 1.4;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .field {
   display: flex;
   flex-direction: column;
