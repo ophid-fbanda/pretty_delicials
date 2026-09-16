@@ -318,8 +318,10 @@ body {
   font-weight: 700;
 }
 
-.submit:active {
-  transform: translateY(1px);
+.submit:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
 }
 
 .ghost {
@@ -815,7 +817,8 @@ body {
 
 .choice {
   display: grid;
-  gap: 0.8rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
 }
 
 .choice-card {
@@ -823,15 +826,17 @@ body {
   font: inherit;
   cursor: pointer;
   width: 100%;
+  min-height: 6.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  justify-content: center;
+  gap: 0.3rem;
   text-align: left;
   background: #fffaf3;
   color: #3a2418;
   border: 1px solid #efdcc4;
   border-radius: 1.2rem;
-  padding: 1.2rem 1.1rem;
+  padding: 1rem 0.9rem;
   box-shadow: 0 8px 18px rgba(122, 50, 20, 0.08);
 }
 
@@ -846,7 +851,7 @@ body {
 }
 
 .who-card {
-  min-height: 17.5rem;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #fffaf3;
@@ -861,8 +866,8 @@ body {
   font-size: 1.05rem;
 }
 
-.who-card .who-actions {
-  margin-top: auto;
+.who-card.tall {
+  min-height: 17.5rem;
 }
 
 .who-card .submit {
@@ -923,6 +928,117 @@ body {
 .pop-card .ghost {
   margin-top: 0.5rem;
   width: 100%;
+}
+
+.flag {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.flag.open {
+  color: #2f7d4a;
+}
+
+.flag.shut,
+.flag.stuck {
+  color: #c45c1a;
+}
+
+.flag.out {
+  color: #1a5f8a;
+}
+
+.map-box {
+  position: relative;
+  height: 9.5rem;
+  margin: 0.5rem 0 1rem;
+  border-radius: 1.1rem;
+  overflow: hidden;
+  border: 1px solid #efdcc4;
+  background:
+    radial-gradient(circle at 58% 46%, #c45c1a 0 7px, transparent 8px),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(122, 50, 20, 0.06) 18px 19px),
+    repeating-linear-gradient(0deg, transparent 0 18px, rgba(122, 50, 20, 0.06) 18px 19px),
+    linear-gradient(#dceccc, #c8d9b4);
+}
+
+.map-box em {
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #5a2a0c;
+  background: #fffaf3;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.fuel {
+  margin: 0.35rem 0 0.8rem;
+}
+
+.fuel-track {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #efdcc4;
+  overflow: hidden;
+}
+
+.fuel-track > span {
+  display: block;
+  height: 100%;
+  background: #2f7d4a;
+}
+
+.k-staff {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.9rem;
+}
+
+.k-chip {
+  background: #f3d08a;
+  color: #7a3214;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.k-order {
+  background: #fffaf3;
+  border: 1px solid #efdcc4;
+  border-radius: 1.05rem;
+  padding: 0.85rem 0.95rem;
+  margin-bottom: 0.55rem;
+}
+
+.k-order.is-stuck {
+  border-color: #c45c1a;
+  box-shadow: inset 0 0 0 1px #c45c1a;
+}
+
+.who-card .who-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tiny-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tiny-row .ghost,
+.tiny-row .submit {
+  flex: 1;
+  margin: 0;
+  padding: 0.7rem 0.5rem;
 }
 
 @media (min-width: 500px) {

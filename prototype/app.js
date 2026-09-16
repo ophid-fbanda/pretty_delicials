@@ -24,13 +24,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const TEAM_ROLES = ["Admin", "Management", "Kitchen", "Delivery"];
   let people = [
-    { id: "seed-admin", name: "Admin", phone: "0771111111", email: "", roles: ["Admin"], disabled: false },
-    { id: "seed-k", name: "Tariro", phone: "0771110001", email: "", roles: ["Kitchen"], disabled: false },
-    { id: "seed-d", name: "Blessing", phone: "0771110002", email: "", roles: ["Delivery"], disabled: false },
-    { id: "seed-m", name: "Nyasha", phone: "0771110003", email: "", roles: ["Management"], disabled: false },
+    { id: "seed-admin", name: "Admin", phone: "0771111111", email: "", roles: ["Admin", "Management"], disabled: false, onDuty: false, cleared: true },
+    { id: "seed-k", name: "Tariro", phone: "0771110001", email: "", roles: ["Kitchen"], disabled: false, onDuty: true, cleared: false },
+    { id: "seed-d", name: "Blessing", phone: "0771110002", email: "", roles: ["Delivery"], disabled: false, onDuty: true, cleared: false },
+    { id: "seed-m", name: "Nyasha", phone: "0771110003", email: "", roles: ["Management"], disabled: false, onDuty: true, cleared: true },
     { id: "seed-c1", name: "Chipo", phone: "0772220001", email: "", roles: [], disabled: false },
     { id: "seed-c2", name: "Farai", phone: "0772220002", email: "", roles: [], disabled: true },
   ];
+  let branches = [
+    { id: "b1", name: "Avondale", address: "12 King George, Avondale", phone: "0771000100", lat: "-17.784", lng: "31.035", open: true },
+    { id: "b2", name: "CBD", address: "44 Julius Nyerere, Harare", phone: "0771000101", lat: "-17.831", lng: "31.052", open: false },
+  ];
+  let catalog = {
+    categories: ["Rolls", "Wraps", "Pies", "Samosas"],
+    sizes: ["Mini", "Regular", "Family"],
+    flavours: ["Sausage", "Chicken", "Beef", "Veg"],
+    items: [
+      { id: "i1", category: "Rolls", size: "Regular", flavour: "Sausage", price: 2.5, available: true },
+      { id: "i2", category: "Wraps", size: "Regular", flavour: "Chicken", price: 3.5, available: true },
+      { id: "i3", category: "Pies", size: "Regular", flavour: "Chicken", price: 4.5, available: true },
+      { id: "i4", category: "Samosas", size: "Mini", flavour: "Beef", price: 1.5, available: false },
+    ],
+  };
+  let vehicles = [
+    { id: "v1", plate: "AET 1234", status: "out", assigneeId: "seed-d", fuel: 62 },
+    { id: "v2", plate: "AEF 7781", status: "yard", assigneeId: null, fuel: 90 },
+  ];
+  let fares = [
+    { id: "f1", area: "Avondale", amount: 3 },
+    { id: "f2", area: "CBD", amount: 2.5 },
+    { id: "f3", area: "Borrowdale", amount: 5 },
+  ];
+  let expenses = [
+    { id: "e1", note: "Flour 25kg", amount: 42 },
+    { id: "e2", note: "Gas refill", amount: 18 },
+  ];
+  let adjustments = [{ id: "a1", note: "Till short Avondale", amount: -4.5 }];
+  let kitchenOrders = [
+    { id: "PD-1038", status: "accepted", mins: 12, staffId: "seed-k" },
+    { id: "PD-1037", status: "out for delivery", mins: 22, staffId: "seed-k" },
+    { id: "PD-1036", status: "delivered", mins: 55, staffId: "seed-k" },
+    { id: "PD-1035", status: "cancelled", mins: 8, staffId: null },
+    { id: "PD-1034", status: "rejected", mins: 6, staffId: "seed-k" },
+    { id: "PD-1033", status: "processing", mins: 41, staffId: "seed-k" },
+  ];
+  let selectedVehicleId = null;
+  const MGMT_VIEWS = new Set([
+    "mgmt",
+    "mgmt-branches",
+    "mgmt-products",
+    "mgmt-categories",
+    "mgmt-sizes",
+    "mgmt-flavours",
+    "mgmt-items",
+    "mgmt-vehicles",
+    "mgmt-vehicle",
+    "mgmt-staff",
+    "mgmt-finance",
+    "mgmt-expenses",
+    "mgmt-adjustments",
+    "mgmt-reports",
+    "mgmt-kitchen",
+    "mgmt-more",
+  ]);
   let roleDrafts = {};
   let staffQuery = "";
   let clientQuery = "";
@@ -138,22 +194,45 @@ document.addEventListener("DOMContentLoaded", () => {
     return view === "admin" || view === "staff" || view === "clients";
   }
 
+  function isMgmtView() {
+    return MGMT_VIEWS.has(view);
+  }
+
+  function personName(id) {
+    const person = people.find((p) => p.id === id);
+    return person ? person.name : "—";
+  }
+
   function renderRoles() {
     const team = user.roles || [];
     burgerBtn.hidden = team.length === 0;
     const items = [];
     if (team.length) items.push({ label: "Shopping", view: "home" });
     if (team.includes("Admin")) items.push({ label: "Administration", view: "admin" });
+    if (team.includes("Management")) items.push({ label: "Management", view: "mgmt" });
     team
-      .filter((role) => role !== "Admin")
+      .filter((role) => role !== "Admin" && role !== "Management")
       .forEach((role) => items.push({ label: role, view: role.toLowerCase() }));
     roleList.innerHTML = items
       .map((item) => {
         const on =
-          (item.view === "home" && !isAdminView()) || (item.view === "admin" && isAdminView());
+          (item.view === "home" && !isAdminView() && !isMgmtView()) ||
+          (item.view === "admin" && isAdminView()) ||
+          (item.view === "mgmt" && isMgmtView());
         return `<button type="button" class="role-btn${on ? " is-on" : ""}" data-view="${item.view}">${item.label}</button>`;
       })
       .join("");
+  }
+
+  function choiceCard(go, title, sub) {
+    return `<button type="button" class="choice-card" data-go="${go}">
+      <strong>${title}</strong>
+      <span>${sub}</span>
+    </button>`;
+  }
+
+  function backBtn(go, label) {
+    return `<button type="button" class="ghost back" data-go="${go}">${label}</button>`;
   }
 
   function draftsFor(person) {
@@ -202,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = people.filter((p) => p.roles.length && matchesPerson(p, staffQuery));
     const cards = list
       .map((person) => {
-        return `<article class="who-card">
+        return `<article class="who-card tall">
           <h2>${person.name}</h2>
           <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
           <div class="ticks">${ticksHtml(person)}</div>
@@ -223,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = people.filter((p) => !p.roles.length && matchesPerson(p, clientQuery));
     const cards = list
       .map((person) => {
-        return `<article class="who-card">
+        return `<article class="who-card tall">
           <h2>${person.name}</h2>
           <p class="muted">${person.phone}${person.email ? " · " + person.email : ""}</p>
           <p class="muted">${person.disabled ? "Disabled" : "Active"}</p>
@@ -240,6 +319,293 @@ document.addEventListener("DOMContentLoaded", () => {
       <h2 class="page-h">Clients</h2>
       <label class="field"><span>Search</span><input id="client-search" value="${clientQuery}" placeholder="Name or phone" /></label>
       <div class="who-grid">${cards || `<p class="muted">No clients match.</p>`}</div>`;
+  }
+
+  function renderMgmt() {
+    const openN = branches.filter((b) => b.open).length;
+    const itemN = catalog.items.length;
+    const outN = vehicles.filter((v) => v.status === "out").length;
+    const dutyN = people.filter((p) => p.roles.length && p.onDuty).length;
+    const stuckN = kitchenOrders.filter((o) => o.mins > 30 && o.status !== "delivered" && o.status !== "cancelled" && o.status !== "rejected").length;
+    stage.innerHTML = `<h2 class="page-h">Management</h2>
+      <div class="choice">
+        ${choiceCard("mgmt-branches", "Branches", openN + " open of " + branches.length)}
+        ${choiceCard("mgmt-products", "Products", itemN + " items")}
+        ${choiceCard("mgmt-vehicles", "Vehicles", outN + " out")}
+        ${choiceCard("mgmt-staff", "Staff", dutyN + " on duty")}
+        ${choiceCard("mgmt-finance", "Finance", expenses.length + " expenses")}
+        ${choiceCard("mgmt-kitchen", "Kitchen", stuckN ? stuckN + " stuck" : "today")}
+        ${choiceCard("mgmt-more", "More", fares.length + " fares")}
+      </div>`;
+  }
+
+  function renderBranches() {
+    const cards = branches
+      .map((shop) => {
+        return `<article class="who-card">
+          <div class="who-top">
+            <h2>${shop.name}</h2>
+            <span class="flag ${shop.open ? "open" : "shut"}">${shop.open ? "Open" : "Closed"}</span>
+          </div>
+          <p class="muted">${shop.address}</p>
+          <p class="muted">${shop.phone}</p>
+          <p class="muted">${shop.lat}, ${shop.lng}</p>
+          <div class="who-actions tiny-row">
+            <button type="button" class="ghost" data-rename-branch="${shop.id}">Rename</button>
+            <button type="button" class="submit" data-toggle-shop="${shop.id}">${shop.open ? "Close" : "Open"}</button>
+          </div>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Branches</h2>
+      <div class="who-grid">${cards}</div>`;
+  }
+
+  function renderProductsHub() {
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Products</h2>
+      <div class="choice">
+        ${choiceCard("mgmt-categories", "Categories", catalog.categories.length + "")}
+        ${choiceCard("mgmt-sizes", "Sizes", catalog.sizes.length + "")}
+        ${choiceCard("mgmt-flavours", "Flavours", catalog.flavours.length + "")}
+        ${choiceCard("mgmt-items", "Items", catalog.items.length + " from the three")}
+      </div>`;
+  }
+
+  function renderTermList(kind, title, singular) {
+    const list = catalog[kind];
+    const rows = list
+      .map((name) => `<div class="line"><strong>${name}</strong></div>`)
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt-products", "Back")}
+      <h2 class="page-h">${title}</h2>
+      <div>${rows}</div>
+      <button type="button" class="submit" data-add-term="${kind}">Add ${singular}</button>`;
+  }
+
+  function renderItems() {
+    const cards = catalog.items
+      .map((item) => {
+        return `<article class="who-card">
+          <div class="who-top">
+            <h2>${item.flavour} ${item.category.toLowerCase()}</h2>
+            <span class="flag ${item.available ? "open" : "shut"}">${item.available ? "Available" : "Off"}</span>
+          </div>
+          <p class="muted">${item.size} · ${item.category}</p>
+          <p class="muted">${money(item.price)}</p>
+          <div class="who-actions">
+            <button type="button" class="ghost" data-toggle-item="${item.id}">${
+              item.available ? "Make unavailable" : "Make available"
+            }</button>
+          </div>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt-products", "Back")}
+      <h2 class="page-h">Items</h2>
+      <p class="muted">Each item is a category, size and flavour, with a price.</p>
+      <div class="who-grid">${cards}</div>
+      <button type="button" class="submit" id="add-item">Add item</button>`;
+  }
+
+  function renderVehicles() {
+    const cards = vehicles
+      .map((v) => {
+        const who = v.assigneeId ? personName(v.assigneeId) : "No assignee";
+        return `<button type="button" class="history-item" data-open-vehicle="${v.id}">
+          <strong>${v.plate}</strong>
+          <div class="meta">${v.status} · ${who} · fuel ${v.fuel}%</div>
+        </button>`;
+      })
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Vehicles</h2>
+      <div class="who-grid">${cards}</div>
+      <button type="button" class="submit" id="register-vehicle">Register</button>`;
+  }
+
+  function renderVehicle() {
+    const v = vehicles.find((item) => item.id === selectedVehicleId);
+    if (!v) {
+      view = "mgmt-vehicles";
+      renderVehicles();
+      return;
+    }
+    const drivers = people.filter((p) => p.roles.includes("Delivery"));
+    const opts = `<option value="">No assignee</option>` + drivers
+      .map((p) => `<option value="${p.id}"${p.id === v.assigneeId ? " selected" : ""}>${p.name}</option>`)
+      .join("");
+    const statuses = ["yard", "loading", "out"]
+      .map((s) => `<option value="${s}"${v.status === s ? " selected" : ""}>${s}</option>`)
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt-vehicles", "Back")}
+      <h2 class="page-h">${v.plate}</h2>
+      <div class="map-box"><em>Map</em></div>
+      <label class="field"><span>Assignee</span><select id="veh-assignee">${opts}</select></label>
+      <label class="field"><span>Status</span><select id="veh-status">${statuses}</select></label>
+      <p class="muted">Fuel ${v.fuel}%</p>
+      <div class="fuel"><div class="fuel-track"><span style="width:${v.fuel}%"></span></div></div>
+      <div class="tiny-row">
+        <button type="button" class="ghost" data-fuel="-10">Fuel −</button>
+        <button type="button" class="ghost" data-fuel="10">Fuel +</button>
+      </div>
+      <button type="button" class="submit" id="return-vehicle">Return</button>`;
+  }
+
+  function renderMgmtStaff() {
+    const list = people.filter((p) => p.roles.length);
+    const cards = list
+      .map((person) => {
+        const next = person.cleared ? "Keeps roles tomorrow" : "Not cleared — no roles tomorrow";
+        return `<article class="who-card">
+          <div class="who-top">
+            <h2>${person.name}</h2>
+            <span class="flag ${person.onDuty ? "open" : "shut"}">${person.onDuty ? "On duty" : "Off"}</span>
+          </div>
+          <p class="muted">${person.roles.join(", ")}</p>
+          <p class="muted">${next}</p>
+          <div class="who-actions">
+            <button type="button" class="submit" data-clear-duty="${person.id}" ${person.cleared ? "disabled" : ""}>${
+              person.cleared ? "Cleared" : "Clear for next day"
+            }</button>
+          </div>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Staff</h2>
+      <p class="muted">On duty now. Clear a shift so they keep roles tomorrow. Uncleared staff lose roles for the next day.</p>
+      <div class="who-grid">${cards}</div>`;
+  }
+
+  function renderFinanceHub() {
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Finance</h2>
+      <div class="choice">
+        ${choiceCard("mgmt-expenses", "Expenses", expenses.length + "")}
+        ${choiceCard("mgmt-adjustments", "Adjustments", adjustments.length + "")}
+        ${choiceCard("mgmt-reports", "Reports", "today")}
+      </div>`;
+  }
+
+  function renderMoneyList(kind, title, rows) {
+    const lines = rows
+      .map((row) => `<div class="line"><div><strong>${row.note}</strong></div><strong>${money(row.amount)}</strong></div>`)
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt-finance", "Back")}
+      <h2 class="page-h">${title}</h2>
+      ${lines || `<p class="muted">None yet.</p>`}
+      <button type="button" class="submit" data-add-money="${kind}">Add</button>`;
+  }
+
+  function renderReports() {
+    const spent = expenses.reduce((s, e) => s + e.amount, 0);
+    const adj = adjustments.reduce((s, e) => s + e.amount, 0);
+    const today = kitchenOrders.length;
+    stage.innerHTML = `${backBtn("mgmt-finance", "Back")}
+      <h2 class="page-h">Reports</h2>
+      <div class="line"><span>Today's orders</span><strong>${today}</strong></div>
+      <div class="line"><span>Expenses</span><strong>${money(spent)}</strong></div>
+      <div class="line"><span>Adjustments</span><strong>${money(adj)}</strong></div>
+      <p class="muted">Today only. Prototype numbers.</p>`;
+  }
+
+  function renderKitchen() {
+    const staff = people.filter((p) => p.roles.includes("Kitchen") && p.onDuty);
+    const chips = staff.map((p) => `<span class="k-chip">${p.name}</span>`).join("") || `<span class="muted">No kitchen staff on duty.</span>`;
+    const cards = kitchenOrders
+      .map((order) => {
+        const stuck = order.mins > 30 && !["delivered", "cancelled", "rejected"].includes(order.status);
+        const label = stuck ? "stuck >30min" : order.status;
+        return `<article class="k-order${stuck ? " is-stuck" : ""}">
+          <div class="who-top">
+            <strong>${order.id}</strong>
+            <span class="flag ${stuck ? "stuck" : order.status === "out for delivery" ? "out" : "open"}">${label}</span>
+          </div>
+          <p class="muted">${order.mins} min · ${order.staffId ? personName(order.staffId) : "—"}</p>
+        </article>`;
+      })
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">Kitchen</h2>
+      <p class="muted">Kitchen staff on duty</p>
+      <div class="k-staff">${chips}</div>
+      <p class="muted">Today's orders</p>
+      ${cards}`;
+  }
+
+  function renderMore() {
+    const rows = fares
+      .map((f) => `<div class="line"><div><strong>${f.area}</strong></div><strong>${money(f.amount)}</strong></div>`)
+      .join("");
+    stage.innerHTML = `${backBtn("mgmt", "Back")}
+      <h2 class="page-h">More</h2>
+      <p class="muted">Delivery fares. Not on Vehicles.</p>
+      ${rows}
+      <button type="button" class="submit" id="add-fare">Add fare</button>`;
+  }
+
+  function openRenameBranch(id) {
+    const shop = branches.find((b) => b.id === id);
+    if (!shop) return;
+    popCard.innerHTML = `<h2>Rename</h2>
+      <label class="field"><span>Name</span><input id="branch-name" value="${shop.name}" /></label>
+      <button type="button" class="submit" id="confirm-rename" data-id="${shop.id}">Save</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openAddTerm(kind) {
+    const label = kind.slice(0, -1);
+    popCard.innerHTML = `<h2>Add ${label}</h2>
+      <label class="field"><span>Name</span><input id="term-name" placeholder="Name" /></label>
+      <p class="error" id="term-error" hidden></p>
+      <button type="button" class="submit" id="confirm-term" data-kind="${kind}">Add</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openAddItem() {
+    const opts = (arr) => arr.map((n) => `<option value="${n}">${n}</option>`).join("");
+    popCard.innerHTML = `<h2>Add item</h2>
+      <label class="field"><span>Category</span><select id="item-cat">${opts(catalog.categories)}</select></label>
+      <label class="field"><span>Size</span><select id="item-size">${opts(catalog.sizes)}</select></label>
+      <label class="field"><span>Flavour</span><select id="item-flavour">${opts(catalog.flavours)}</select></label>
+      <label class="field"><span>Price</span><input id="item-price" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+      <p class="error" id="item-error" hidden></p>
+      <button type="button" class="submit" id="confirm-item">Add</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openRegisterVehicle() {
+    popCard.innerHTML = `<h2>Register vehicle</h2>
+      <label class="field"><span>Plate</span><input id="veh-plate" placeholder="AET 0000" /></label>
+      <p class="error" id="veh-error" hidden></p>
+      <button type="button" class="submit" id="confirm-vehicle">Register</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openAddMoney(kind) {
+    popCard.innerHTML = `<h2>Add ${kind === "expenses" ? "expense" : "adjustment"}</h2>
+      <label class="field"><span>Note</span><input id="money-note" placeholder="What for" /></label>
+      <label class="field"><span>Amount</span><input id="money-amount" type="number" step="0.01" placeholder="0.00" /></label>
+      <p class="error" id="money-error" hidden></p>
+      <button type="button" class="submit" id="confirm-money" data-kind="${kind}">Add</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
+  }
+
+  function openAddFare() {
+    popCard.innerHTML = `<h2>Add fare</h2>
+      <label class="field"><span>Area</span><input id="fare-area" placeholder="Suburb" /></label>
+      <label class="field"><span>Fare</span><input id="fare-amount" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+      <p class="error" id="fare-error" hidden></p>
+      <button type="button" class="submit" id="confirm-fare">Add</button>
+      <button type="button" class="ghost" id="close-pop">Close</button>`;
+    pop.hidden = false;
   }
 
   function openRecruit(id) {
@@ -549,12 +915,30 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (view === "admin") renderAdmin();
     else if (view === "staff") renderStaff();
     else if (view === "clients") renderClients();
+    else if (view === "mgmt") renderMgmt();
+    else if (view === "mgmt-branches") renderBranches();
+    else if (view === "mgmt-products") renderProductsHub();
+    else if (view === "mgmt-categories") renderTermList("categories", "Categories", "category");
+    else if (view === "mgmt-sizes") renderTermList("sizes", "Sizes", "size");
+    else if (view === "mgmt-flavours") renderTermList("flavours", "Flavours", "flavour");
+    else if (view === "mgmt-items") renderItems();
+    else if (view === "mgmt-vehicles") renderVehicles();
+    else if (view === "mgmt-vehicle") renderVehicle();
+    else if (view === "mgmt-staff") renderMgmtStaff();
+    else if (view === "mgmt-finance") renderFinanceHub();
+    else if (view === "mgmt-expenses") renderMoneyList("expenses", "Expenses", expenses);
+    else if (view === "mgmt-adjustments") renderMoneyList("adjustments", "Adjustments", adjustments);
+    else if (view === "mgmt-reports") renderReports();
+    else if (view === "mgmt-kitchen") renderKitchen();
+    else if (view === "mgmt-more") renderMore();
     renderCartDock();
   }
 
   function enterApp(nextUser) {
     user = nextUser;
-    view = nextUser.roles.includes("Admin") ? "admin" : "home";
+    if (nextUser.roles.includes("Admin")) view = "admin";
+    else if (nextUser.roles.includes("Management")) view = "mgmt";
+    else view = "home";
     category = "All";
     authScreen.hidden = true;
     appScreen.hidden = false;
@@ -605,6 +989,8 @@ document.addEventListener("DOMContentLoaded", () => {
           email,
           roles: [],
           disabled: false,
+          onDuty: false,
+          cleared: false,
         };
         people.push(person);
       }
@@ -625,6 +1011,8 @@ document.addEventListener("DOMContentLoaded", () => {
         email,
         roles: ["Admin"],
         disabled: false,
+        onDuty: false,
+        cleared: false,
       };
       people.push(person);
     }
@@ -673,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = event.target.closest("[data-view]");
     if (!btn) return;
     closeOverlays();
-    view = btn.dataset.view === "admin" ? "admin" : "home";
+    view = btn.dataset.view;
     render();
   });
 
@@ -792,6 +1180,83 @@ document.addEventListener("DOMContentLoaded", () => {
     const reset = event.target.closest("[data-reset-secret]");
     if (reset) {
       openResetSecret(reset.dataset.resetSecret);
+      return;
+    }
+    const go = event.target.closest("[data-go]");
+    if (go) {
+      view = go.dataset.go;
+      render();
+      return;
+    }
+    const renameBranch = event.target.closest("[data-rename-branch]");
+    if (renameBranch) {
+      openRenameBranch(renameBranch.dataset.renameBranch);
+      return;
+    }
+    const toggleShop = event.target.closest("[data-toggle-shop]");
+    if (toggleShop) {
+      const shop = branches.find((b) => b.id === toggleShop.dataset.toggleShop);
+      if (shop) shop.open = !shop.open;
+      render();
+      return;
+    }
+    const addTerm = event.target.closest("[data-add-term]");
+    if (addTerm) {
+      openAddTerm(addTerm.dataset.addTerm);
+      return;
+    }
+    const toggleItem = event.target.closest("[data-toggle-item]");
+    if (toggleItem) {
+      const item = catalog.items.find((i) => i.id === toggleItem.dataset.toggleItem);
+      if (item) item.available = !item.available;
+      render();
+      return;
+    }
+    if (event.target.id === "add-item") {
+      openAddItem();
+      return;
+    }
+    const openVeh = event.target.closest("[data-open-vehicle]");
+    if (openVeh) {
+      selectedVehicleId = openVeh.dataset.openVehicle;
+      view = "mgmt-vehicle";
+      render();
+      return;
+    }
+    if (event.target.id === "register-vehicle") {
+      openRegisterVehicle();
+      return;
+    }
+    const fuelBtn = event.target.closest("[data-fuel]");
+    if (fuelBtn) {
+      const v = vehicles.find((item) => item.id === selectedVehicleId);
+      if (v) v.fuel = Math.max(0, Math.min(100, v.fuel + Number(fuelBtn.dataset.fuel)));
+      render();
+      return;
+    }
+    if (event.target.id === "return-vehicle") {
+      const v = vehicles.find((item) => item.id === selectedVehicleId);
+      if (v) {
+        v.assigneeId = null;
+        v.status = "yard";
+      }
+      render();
+      return;
+    }
+    const clearDuty = event.target.closest("[data-clear-duty]");
+    if (clearDuty && !clearDuty.disabled) {
+      const person = people.find((p) => p.id === clearDuty.dataset.clearDuty);
+      if (person) person.cleared = true;
+      render();
+      return;
+    }
+    const addMoney = event.target.closest("[data-add-money]");
+    if (addMoney) {
+      openAddMoney(addMoney.dataset.addMoney);
+      return;
+    }
+    if (event.target.id === "add-fare") {
+      openAddFare();
     }
   });
 
@@ -799,6 +1264,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.target.id === "location-select") {
       selectedLocationId = event.target.value || null;
       render();
+    }
+    if (event.target.id === "veh-assignee") {
+      const v = vehicles.find((item) => item.id === selectedVehicleId);
+      if (v) v.assigneeId = event.target.value || null;
+    }
+    if (event.target.id === "veh-status") {
+      const v = vehicles.find((item) => item.id === selectedVehicleId);
+      if (v) v.status = event.target.value;
     }
     const tick = event.target.closest("[data-role-tick]");
     if (tick) {
@@ -848,6 +1321,108 @@ document.addEventListener("DOMContentLoaded", () => {
       closePop();
       return;
     }
+    if (event.target.id === "confirm-rename") {
+      const shop = branches.find((b) => b.id === event.target.dataset.id);
+      const name = (document.getElementById("branch-name") || {}).value || "";
+      if (shop && name.trim()) shop.name = name.trim();
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "confirm-term") {
+      const kind = event.target.dataset.kind;
+      const name = ((document.getElementById("term-name") || {}).value || "").trim();
+      const err = document.getElementById("term-error");
+      if (!name) {
+        err.textContent = "Enter a name.";
+        err.hidden = false;
+        return;
+      }
+      if (catalog[kind].includes(name)) {
+        err.textContent = "Already there.";
+        err.hidden = false;
+        return;
+      }
+      catalog[kind].push(name);
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "confirm-item") {
+      const category = document.getElementById("item-cat").value;
+      const size = document.getElementById("item-size").value;
+      const flavour = document.getElementById("item-flavour").value;
+      const price = Number(document.getElementById("item-price").value);
+      const err = document.getElementById("item-error");
+      if (!document.getElementById("item-price").value || Number.isNaN(price) || price < 0) {
+        err.textContent = "Enter a price.";
+        err.hidden = false;
+        return;
+      }
+      const exists = catalog.items.some(
+        (i) => i.category === category && i.size === size && i.flavour === flavour
+      );
+      if (exists) {
+        err.textContent = "That combination is already an item.";
+        err.hidden = false;
+        return;
+      }
+      catalog.items.push({
+        id: "i-" + Date.now(),
+        category,
+        size,
+        flavour,
+        price,
+        available: true,
+      });
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "confirm-vehicle") {
+      const plate = ((document.getElementById("veh-plate") || {}).value || "").trim();
+      const err = document.getElementById("veh-error");
+      if (!plate) {
+        err.textContent = "Enter a plate.";
+        err.hidden = false;
+        return;
+      }
+      vehicles.push({ id: "v-" + Date.now(), plate, status: "yard", assigneeId: null, fuel: 100 });
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "confirm-money") {
+      const kind = event.target.dataset.kind;
+      const note = ((document.getElementById("money-note") || {}).value || "").trim();
+      const amount = Number((document.getElementById("money-amount") || {}).value);
+      const err = document.getElementById("money-error");
+      if (!note || Number.isNaN(amount)) {
+        err.textContent = "Note and amount are required.";
+        err.hidden = false;
+        return;
+      }
+      const row = { id: kind[0] + Date.now(), note, amount };
+      if (kind === "expenses") expenses.push(row);
+      else adjustments.push(row);
+      closePop();
+      render();
+      return;
+    }
+    if (event.target.id === "confirm-fare") {
+      const area = ((document.getElementById("fare-area") || {}).value || "").trim();
+      const amount = Number((document.getElementById("fare-amount") || {}).value);
+      const err = document.getElementById("fare-error");
+      if (!area || Number.isNaN(amount)) {
+        err.textContent = "Area and fare are required.";
+        err.hidden = false;
+        return;
+      }
+      fares.push({ id: "f-" + Date.now(), area, amount });
+      closePop();
+      render();
+      return;
+    }
     if (event.target.id === "confirm-reset") {
       const id = event.target.dataset.id;
       const person = people.find((p) => p.id === id);
@@ -874,11 +1449,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       person.roles = roles.slice();
       person.disabled = false;
+      person.onDuty = true;
+      person.cleared = false;
       syncUserRoles(person);
       closePop();
       view = "staff";
       render();
     }
+  });
 
   pop.addEventListener("change", (event) => {
     const tick = event.target.closest("[data-role-tick]");
