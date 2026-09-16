@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = "5";
+export const SCHEMA_VERSION = "6";
 
 export const RESET = `
 PRAGMA foreign_keys = OFF;
@@ -157,7 +157,6 @@ CREATE TABLE IF NOT EXISTS orders (
   address TEXT,
   lat REAL,
   lng REAL,
-  total REAL NOT NULL,
   fare REAL NOT NULL DEFAULT 0,
   pay TEXT,
   cancelled INTEGER NOT NULL DEFAULT 0 CHECK (cancelled IN (0, 1)),
@@ -167,12 +166,11 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE TABLE IF NOT EXISTS order_lines (
   id INTEGER PRIMARY KEY,
-  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  order_id TEXT NOT NULL REFERENCES orders(id),
   name TEXT NOT NULL,
   qty INTEGER NOT NULL,
-  product_id TEXT REFERENCES shop_products(id) ON DELETE SET NULL,
-  unit_price REAL NOT NULL,
-  line_total REAL NOT NULL
+  product_id TEXT NOT NULL REFERENCES shop_products(id),
+  product_price_id INTEGER NOT NULL REFERENCES product_prices(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_steps (
@@ -188,4 +186,46 @@ CREATE TABLE IF NOT EXISTS order_reject_reasons (
   order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   reason TEXT NOT NULL
 );
+
+CREATE TRIGGER IF NOT EXISTS product_prices_no_update
+BEFORE UPDATE ON product_prices
+BEGIN
+  SELECT RAISE(ABORT, 'product prices cannot be changed');
+END;
+
+CREATE TRIGGER IF NOT EXISTS product_prices_no_delete
+BEFORE DELETE ON product_prices
+BEGIN
+  SELECT RAISE(ABORT, 'product prices cannot be deleted');
+END;
+
+CREATE TRIGGER IF NOT EXISTS item_prices_no_update
+BEFORE UPDATE ON item_prices
+BEGIN
+  SELECT RAISE(ABORT, 'item prices cannot be changed');
+END;
+
+CREATE TRIGGER IF NOT EXISTS item_prices_no_delete
+BEFORE DELETE ON item_prices
+BEGIN
+  SELECT RAISE(ABORT, 'item prices cannot be deleted');
+END;
+
+CREATE TRIGGER IF NOT EXISTS order_lines_no_update
+BEFORE UPDATE ON order_lines
+BEGIN
+  SELECT RAISE(ABORT, 'order lines cannot be changed');
+END;
+
+CREATE TRIGGER IF NOT EXISTS order_lines_no_delete
+BEFORE DELETE ON order_lines
+BEGIN
+  SELECT RAISE(ABORT, 'order lines cannot be deleted');
+END;
+
+CREATE TRIGGER IF NOT EXISTS orders_money_no_update
+BEFORE UPDATE OF fare, pay, account_id ON orders
+BEGIN
+  SELECT RAISE(ABORT, 'order payment cannot be changed');
+END;
 `;

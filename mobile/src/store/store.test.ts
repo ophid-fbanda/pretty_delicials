@@ -36,8 +36,7 @@ test("Client placeOrder becomes kitchen incoming then delivery ready", async () 
   const { session } = await store.login("0772220001", "test123");
   const id = await store.placeOrder({
     accountId: session.id,
-    lines: [{ name: "Sausage roll", qty: 2, productId: "sausage-roll", unitPrice: 2.5 }],
-    total: 5,
+    lines: [{ productId: "sausage-roll", qty: 2 }],
     fare: 3,
     locationName: "Home",
     pay: "Cash. Change to prepare: 5.00",
@@ -111,10 +110,10 @@ test("catalog items point at category ids, not names as keys", async () => {
 test("changing list price does not rewrite a sale", async () => {
   const store = await openStore();
   const { session } = await store.login("0772220001", "test123");
+  await store.setProductPrice("sausage-roll", 8);
   const id = await store.placeOrder({
     accountId: session.id,
-    lines: [{ name: "Sausage roll", qty: 10, productId: "sausage-roll", unitPrice: 8 }],
-    total: 80,
+    lines: [{ productId: "sausage-roll", qty: 10 }],
     fare: 0,
     locationName: "Home",
     pay: "Cash. Change to prepare: 0.00",
@@ -127,4 +126,14 @@ test("changing list price does not rewrite a sale", async () => {
   assert.equal(order?.total, 80);
   const shop = (await store.shopProducts()).find((row) => row.id === "sausage-roll");
   assert.equal(shop?.price, 10);
+});
+
+test("a price row cannot be edited after it is written", async () => {
+  const wasm = readFileSync(require.resolve("sql.js/dist/sql-wasm.wasm"));
+  const SQL = await initSqlJs({ wasmBinary: wasm });
+  const raw = new SQL.Database();
+  const driver = sqlJsDriver(raw);
+  await createStore(driver);
+  await assert.rejects(() => driver.run("UPDATE product_prices SET amount = 0"));
+  await assert.rejects(() => driver.run("UPDATE order_lines SET qty = 0"));
 });

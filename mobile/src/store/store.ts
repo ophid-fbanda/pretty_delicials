@@ -26,7 +26,6 @@ import {
   type Fare,
   type MoneyRow,
   type Order,
-  type OrderLine,
   type Reports,
   type SavedLocation,
   type Session,
@@ -53,7 +52,6 @@ type OrderRow = {
   address: string | null;
   lat: number | null;
   lng: number | null;
-  total: number;
   fare: number;
   pay: string | null;
   cancelled: number;
@@ -175,18 +173,18 @@ export class Store {
     for (const row of EXPENSES) await this.db.run("INSERT INTO expenses (id, note, amount) VALUES (?, ?, ?)", [row.id, row.note, row.amount]);
     for (const row of ADJUSTMENTS) await this.db.run("INSERT INTO adjustments (id, note, amount) VALUES (?, ?, ?)", [row.id, row.note, row.amount]);
     for (const order of ORDERS) {
-      const lines = order.lines.map((line) => {
+      const lines = [];
+      for (const line of order.lines) {
         const product = SHOP_PRODUCTS.find((p) => p.name === line.name);
-        const unitPrice = product?.price ?? 0;
-        return {
+        if (!product) continue;
+        const price = await this.currentProductPrice(product.id);
+        lines.push({
           name: line.name,
           qty: line.qty,
-          productId: product?.id ?? null,
-          unitPrice,
-          lineTotal: unitPrice * line.qty,
-        };
-      });
-      const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+          productId: product.id,
+          productPriceId: price.id,
+        });
+      }
       await this.insertOrder({
         id: order.id,
         accountId: null,
@@ -196,7 +194,6 @@ export class Store {
         address: order.address,
         lat: order.lat,
         lng: order.lng,
-        total,
         fare: 0,
         pay: null,
         cancelled: order.status === "cancelled",
@@ -208,6 +205,15 @@ export class Store {
     }
   }
 
+  private async currentProductPrice(productId: string) {
+    const row = await this.db.get<{ id: number; amount: number }>(
+      `SELECT id, amount FROM product_prices WHERE product_id = ? ORDER BY set_at DESC, id DESC LIMIT 1`,
+      [productId]
+    );
+    if (!row) throw new Error("No price for product " + productId);
+    return row;
+  }
+
   private async insertOrder(input: {
     id: string;
     accountId: string | null;
@@ -217,18 +223,17 @@ export class Store {
     address: string | null;
     lat: number | null;
     lng: number | null;
-    total: number;
     fare: number;
     pay: string | null;
     cancelled: boolean;
     reasons: string[];
     notes: string;
     createdAt: number;
-    lines: OrderLine[];
+    lines: { name: string; qty: number; productId: string; productPriceId: number }[];
   }) {
     await this.db.run(
-      `INSERT INTO orders (id, account_id, status, mins, kitchen_staff_id, address, lat, lng, total, fare, pay, cancelled, notes, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, account_id, status, mins, kitchen_staff_id, address, lat, lng, fare, pay, cancelled, notes, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.id,
         input.accountId,
@@ -238,7 +243,6 @@ export class Store {
         input.address,
         input.lat,
         input.lng,
-        input.total,
         input.fare,
         input.pay,
         input.cancelled ? 1 : 0,
@@ -248,8 +252,8 @@ export class Store {
     );
     for (const line of input.lines) {
       await this.db.run(
-        `INSERT INTO order_lines (order_id, name, qty, product_id, unit_price, line_total) VALUES (?, ?, ?, ?, ?, ?)`,
-        [input.id, line.name, line.qty, line.productId, line.unitPrice, line.lineTotal]
+        `INSERT INTO order_lines (order_id, name, qty, product_id, product_price_id) VALUES (?, ?, ?, ?, ?)`,
+        [input.id, line.name, line.qty, line.productId, line.productPriceId]
       );
     }
     for (const reason of input.reasons) {
@@ -640,10 +644,24 @@ export class Store {
     const lines = await this.db.all<{
       name: string;
       qty: number;
-      product_id: string | null;
+      product_id: string;
+      product_price_id: number;
       unit_price: number;
-      line_total: number;
-    }>("SELECT name, qty, product_id, unit_price, line_total FROM order_lines WHERE order_id = ?", [row.id]);
+    }>(
+      `SELECT ol.name, ol.qty, ol.product_id, ol.product_price_id, pp.amount AS unit_price
+       FROM order_lines ol
+       JOIN product_prices pp ON pp.id = ol.product_price_id
+       WHERE ol.order_id = ?`,
+      [row.id]
+    );
+    const mapped = lines.map((line) => ({
+      name: line.name,
+      qty: line.qty,
+      productId: line.product_id,
+      productPriceId: line.product_price_id,
+      unitPrice: line.unit_price,
+      lineTotal: line.qty * line.unit_price,
+    }));
     const steps = await this.db.all<{ name: string; at: number | null; seq: number }>(
       "SELECT name, at, seq FROM order_steps WHERE order_id = ? ORDER BY seq",
       [row.id]
@@ -658,41 +676,39 @@ export class Store {
       address: row.address,
       lat: row.lat,
       lng: row.lng,
-      total: row.total,
       fare: row.fare,
+      total: mapped.reduce((sum, line) => sum + line.lineTotal, 0) + row.fare,
       pay: row.pay,
       cancelled: flag(row.cancelled),
       reasons: reasons.map((r) => r.reason),
       notes: row.notes,
       createdAt: row.created_at,
-      lines: lines.map((line) => ({
-        name: line.name,
-        qty: line.qty,
-        productId: line.product_id,
-        unitPrice: line.unit_price,
-        lineTotal: line.line_total,
-      })),
+      lines: mapped,
       steps,
     };
   }
 
   async placeOrder(input: {
     accountId: string;
-    lines: { name: string; qty: number; productId: string | null; unitPrice: number }[];
-    total: number;
+    lines: { productId: string; qty: number }[];
     fare: number;
     locationName: string | null;
     pay: string;
   }) {
     const next = await this.nextOrderId();
     const createdAt = Date.now();
-    const lines: OrderLine[] = input.lines.map((line) => ({
-      name: line.name,
-      qty: line.qty,
-      productId: line.productId,
-      unitPrice: line.unitPrice,
-      lineTotal: line.qty * line.unitPrice,
-    }));
+    const lines = [];
+    for (const line of input.lines) {
+      const product = await this.db.get<{ name: string }>("SELECT name FROM shop_products WHERE id = ?", [line.productId]);
+      if (!product) throw new Error("Unknown product " + line.productId);
+      const price = await this.currentProductPrice(line.productId);
+      lines.push({
+        name: product.name,
+        qty: line.qty,
+        productId: line.productId,
+        productPriceId: price.id,
+      });
+    }
     await this.insertOrder({
       id: next,
       accountId: input.accountId,
@@ -702,7 +718,6 @@ export class Store {
       address: input.locationName,
       lat: null,
       lng: null,
-      total: input.total,
       fare: input.fare,
       pay: input.pay,
       cancelled: false,

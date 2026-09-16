@@ -109,7 +109,8 @@ export type SavedLocation = { id: string; accountId: string; name: string; detai
 export type OrderLine = {
   name: string;
   qty: number;
-  productId: string | null;
+  productId: string;
+  productPriceId: number;
   unitPrice: number;
   lineTotal: number;
 };
@@ -125,8 +126,8 @@ export type Order = {
   address: string | null;
   lat: number | null;
   lng: number | null;
-  total: number;
   fare: number;
+  total: number;
   pay: string | null;
   cancelled: boolean;
   reasons: string[];
